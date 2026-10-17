@@ -1,0 +1,158 @@
+{
+  "COMPONENTS": {
+    "FILE_BUBBLE": {
+      "DOWNLOAD": "Ներբեռնել",
+      "UPLOADING": "Վերբեռնվում է..."
+    },
+    "FORM_BUBBLE": {
+      "SUBMIT": "Ուղարկել"
+    },
+    "MESSAGE_BUBBLE": {
+      "RETRY": "Կրկին ուղարկել",
+      "ERROR_MESSAGE": "Չհաջողվեց ուղարկել, փորձեք կրկին"
+    }
+  },
+  "THUMBNAIL": {
+    "AUTHOR": {
+      "NOT_AVAILABLE": "Հասանելի չէ"
+    }
+  },
+  "TEAM_AVAILABILITY": {
+    "ONLINE": "Մենք առցանց ենք",
+    "OFFLINE": "Այս պահին առցանց չենք",
+    "BACK_AS_SOON_AS_POSSIBLE": "Կպատասխանենք հնարավորինս շուտ"
+  },
+  "REPLY_TIME": {
+    "IN_A_FEW_MINUTES": "Սովորաբար պատասխանում ենք մի քանի րոպեում",
+    "IN_A_FEW_HOURS": "Սովորաբար պատասխանում ենք մի քանի ժամում",
+    "IN_A_DAY": "Սովորաբար պատասխանում ենք մեկ օրվա ընթացքում",
+    "BACK_IN_HOURS": "Առցանց կլինենք {n} ժամից | Առցանց կլինենք {n} ժամից",
+    "BACK_IN_MINUTES": "Առցանց կլինենք {time} րոպեից",
+    "BACK_AT_TIME": "Առցանց կլինենք ժամը {time}-ին",
+    "BACK_ON_DAY": "Առցանց կլինենք {day}",
+    "BACK_TOMORROW": "Առցանց կլինենք վաղը",
+    "BACK_IN_SOME_TIME": "Առցանց կլինենք շուտով"
+  },
+  "DAY_NAMES": {
+    "SUNDAY": "կիրակի",
+    "MONDAY": "երկուշաբթի",
+    "TUESDAY": "երեքշաբթի",
+    "WEDNESDAY": "չորեքշաբթի",
+    "THURSDAY": "հինգշաբթի",
+    "FRIDAY": "ուրբաթ",
+    "SATURDAY": "շաբաթ"
+  },
+  "START_CONVERSATION": "Սկսել զրույցը",
+  "END_CONVERSATION": "Ավարտել զրույցը",
+  "CONTINUE_CONVERSATION": "Շարունակել զրույցը",
+  "YOU": "Դուք",
+  "START_NEW_CONVERSATION": "Սկսել նոր զրույց",
+  "VIEW_UNREAD_MESSAGES": "Ունեք չկարդացված հաղորդագրություններ",
+  "UNREAD_VIEW": {
+    "VIEW_MESSAGES_BUTTON": "Դիտել նոր հաղորդագրությունները",
+    "CLOSE_MESSAGES_BUTTON": "Փակել",
+    "COMPANY_FROM": "Ուղարկող՝",
+    "BOT": "Բոտ"
+  },
+  "BUBBLE": {
+    "LABEL": "Գրեք մեզ"
+  },
+  "POWERED_BY": "Powered by Chatwoot",
+  "EMAIL_PLACEHOLDER": "Մուտքագրեք Ձեր էլ. հասցեն",
+  "CHAT_PLACEHOLDER": "Գրեք Ձեր հաղորդագրությունը",
+  "TODAY": "Այսօր",
+  "YESTERDAY": "Երեկ",
+  "PRE_CHAT_FORM": {
+    "FIELDS": {
+      "FULL_NAME": {
+        "LABEL": "Անուն Ազգանուն",
+        "PLACEHOLDER": "Մուտքագրեք Ձեր անունը և ազգանունը",
+        "REQUIRED_ERROR": "Անունը պարտադիր է"
+      },
+      "EMAIL_ADDRESS": {
+        "LABEL": "Էլ. հասցե",
+        "PLACEHOLDER": "Մուտքագրեք Ձեր էլ. հասցեն",
+        "REQUIRED_ERROR": "Էլ. հասցեն պարտադիր է",
+        "VALID_ERROR": "Մուտքագրեք ճիշտ էլ. հասցե"
+      },
+      "PHONE_NUMBER": {
+        "LABEL": "Հեռախոսահամար",
+        "PLACEHOLDER": "Մուտքագրեք Ձեր հեռախոսահամարը",
+        "REQUIRED_ERROR": "Հեռախոսահամարը պարտադիր է",
+        "DIAL_CODE_VALID_ERROR": "Ընտրեք երկրի կոդը",
+        "VALID_ERROR": "Մուտքագրեք ճիշտ հեռախոսահամար",
+        "DROPDOWN_EMPTY": "Ոչինչ չի գտնվել",
+        "DROPDOWN_SEARCH": "Որոնել երկիրը"
+      },
+      "MESSAGE": {
+        "LABEL": "Հաղորդագրություն",
+        "PLACEHOLDER": "Գրեք Ձեր հաղորդագրությունը",
+        "ERROR": "Հաղորդագրությունը շատ կարճ է"
+      }
+    },
+    "CAMPAIGN_HEADER": "Զրույցը սկսելուց առաջ նշեք Ձեր անունը և էլ. հասցեն",
+    "IS_REQUIRED": "պարտադիր է",
+    "REQUIRED": "Պարտադիր",
+    "REGEX_ERROR": "Մուտքագրեք ճիշտ տվյալներ"
+  },
+  "FILE_SIZE_LIMIT": "Ֆայլը գերազանցում է {MAXIMUM_FILE_UPLOAD_SIZE} սահմանաչափը",
+  "CHAT_FORM": {
+    "INVALID": {
+      "FIELD": "Սխալ դաշտ"
+    }
+  },
+  "EMOJI": {
+    "PLACEHOLDER": "Որոնել էմոջի",
+    "NOT_FOUND": "Համապատասխան էմոջի չգտնվեց",
+    "ARIA_LABEL": "Էմոջիների ընտրություն"
+  },
+  "EMOJI_ICON_PICKER": {
+    "SEARCH_EMOJI": "Որոնել էմոջի…",
+    "FREQUENTLY_USED": "Հաճախ օգտագործվող",
+    "NO_EMOJI": "Համապատասխան էմոջի չգտնվեց"
+  },
+  "CSAT": {
+    "TITLE": "Գնահատեք զրույցը",
+    "SUBMITTED_TITLE": "Շնորհակալություն գնահատականի համար",
+    "PLACEHOLDER": "Պատմեք ավելին..."
+  },
+  "EMAIL_TRANSCRIPT": {
+    "BUTTON_TEXT": "Ստանալ զրույցի պատճենը էլ. փոստով",
+    "SEND_EMAIL_SUCCESS": "Զրույցի պատճենը հաջողությամբ ուղարկվեց",
+    "SEND_EMAIL_ERROR": "Սխալ տեղի ունեցավ, փորձեք կրկին"
+  },
+  "INTEGRATIONS": {
+    "DYTE": {
+      "CLICK_HERE_TO_JOIN": "Սեղմեք՝ միանալու համար",
+      "LEAVE_THE_ROOM": "Լքել զանգը"
+    }
+  },
+  "PORTAL": {
+    "POPULAR_ARTICLES": "Հանրաճանաչ հոդվածներ",
+    "VIEW_ALL_ARTICLES": "Դիտել բոլոր հոդվածները",
+    "IFRAME_LOAD_ERROR": "Հոդվածը բեռնելիս սխալ տեղի ունեցավ, թարմացրեք էջը և փորձեք կրկին։"
+  },
+  "ATTACHMENTS": {
+    "image": {
+      "CONTENT": "Նկար"
+    },
+    "audio": {
+      "CONTENT": "Ձայնային հաղորդագրություն"
+    },
+    "video": {
+      "CONTENT": "Տեսահաղորդագրություն"
+    },
+    "file": {
+      "CONTENT": "Կցված ֆայլ"
+    },
+    "location": {
+      "CONTENT": "Տեղադրություն"
+    },
+    "fallback": {
+      "CONTENT": "կիսվել է հղումով"
+    }
+  },
+  "FOOTER_REPLY_TO": {
+    "REPLY_TO": "Պատասխան՝"
+  }
+}

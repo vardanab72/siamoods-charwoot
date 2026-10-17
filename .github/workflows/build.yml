@@ -1,0 +1,40 @@
+name: Build Chatwoot image (Armenian widget)
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+env:
+  CHATWOOT_VERSION: v4.18.0
+  IMAGE: ghcr.io/${{ github.repository_owner }}/siamoods-chatwoot
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/setup-buildx-action@v3
+
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          platforms: linux/amd64
+          build-args: CHATWOOT_VERSION=${{ env.CHATWOOT_VERSION }}
+          push: true
+          tags: |
+            ${{ env.IMAGE }}:${{ env.CHATWOOT_VERSION }}-hy
+            ${{ env.IMAGE }}:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
