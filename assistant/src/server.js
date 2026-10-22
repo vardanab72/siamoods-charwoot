@@ -1,8 +1,9 @@
 // HTTP entry point: receives Chatwoot Agent Bot webhooks.
-//   POST /webhook/<WEBHOOK_SECRET>   (set as the bot's outgoing URL)
+//   POST /webhook   (the bot's outgoing URL; requests are verified with X-Chatwoot-Signature)
 //   GET  /health
 
 import http from 'node:http';
+import crypto from 'node:crypto';
 import { config } from './config.js';
 import { log } from './log.js';
 import * as store from './store.js';
@@ -117,18 +118,34 @@ function handleEvent(ev) {
   );
 }
 
+// Chatwoot: X-Chatwoot-Signature = "sha256=" + HMAC_SHA256(secret, `${timestamp}.${body}`)
+export function validSignature(headers, body, now = Date.now()) {
+  const ts = headers['x-chatwoot-timestamp'];
+  const sig = headers['x-chatwoot-signature'];
+  if (!ts || !sig) return false;
+  if (Math.abs(now / 1000 - Number(ts)) > 300) return false;
+  const expected = `sha256=${crypto.createHmac('sha256', config.webhookSecret).update(`${ts}.${body}`).digest('hex')}`;
+  const a = Buffer.from(String(sig));
+  const b = Buffer.from(expected);
+  return a.length === b.length && crypto.timingSafeEqual(a, b);
+}
+
 const server = http.createServer((req, res) => {
   if (req.method === 'GET' && req.url === '/health') {
     res.writeHead(200, { 'Content-Type': 'application/json' });
     return res.end(JSON.stringify({ ok: true, model: config.model }));
   }
-  if (req.method === 'POST' && req.url === `/webhook/${config.webhookSecret}`) {
+  if (req.method === 'POST' && req.url === '/webhook') {
     let body = '';
     req.on('data', (c) => {
       body += c;
       if (body.length > 2_000_000) req.destroy();
     });
     req.on('end', () => {
+      if (!validSignature(req.headers, body)) {
+        log.warn('rejected webhook: bad signature');
+        return res.writeHead(401).end();
+      }
       res.writeHead(200).end('ok'); // answer Chatwoot immediately
       try {
         handleEvent(JSON.parse(body));

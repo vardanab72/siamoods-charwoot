@@ -4,10 +4,11 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
+import crypto from 'node:crypto';
 
 const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'sma-'));
 Object.assign(process.env, {
-  WEBHOOK_SECRET: 'testsecret',
+  CHATWOOT_WEBHOOK_SECRET: 'testsecret',
   ANTHROPIC_API_KEY: 'test-key',
   CHATWOOT_BOT_TOKEN: 'bot-token',
   DATA_DIR: tmp,
@@ -79,15 +80,18 @@ const http = await import('node:http');
 // find the listening port
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 await wait(50);
-const port = (await import('node:net')).default;
 
-async function post(server, payload) {
+async function post(server, payload, unsigned = false) {
   const { port } = server.address();
   return new Promise((resolve, reject) => {
-    const req = http.request({ host: '127.0.0.1', port, path: '/webhook/testsecret', method: 'POST',
-      headers: { 'content-type': 'application/json' } }, (res) => { res.resume(); res.on('end', resolve); });
+    const body = JSON.stringify(payload);
+    const ts = String(Math.floor(Date.now() / 1000));
+    const sig = 'sha256=' + crypto.createHmac('sha256', 'testsecret').update(`${ts}.${body}`).digest('hex');
+    const req = http.request({ host: '127.0.0.1', port, path: '/webhook', method: 'POST',
+      headers: { 'content-type': 'application/json', 'x-chatwoot-timestamp': ts, 'x-chatwoot-signature': unsigned ? 'sha256=bad' : sig } },
+      (res) => { res.resume(); res.on('end', () => resolve(res.statusCode)); });
     req.on('error', reject);
-    req.end(JSON.stringify(payload));
+    req.end(body);
   });
 }
 
@@ -130,6 +134,13 @@ test('customer message -> search -> text + cards + labels', async () => {
   assert.equal(st.introduced, true);
   assert.equal(st.history.at(-1).role, 'assistant');
   assert.equal(claudeRound, 3);
+});
+
+test('unsigned webhook is rejected', async () => {
+  const servers = process._getActiveHandles().filter((h) => h.constructor?.name === 'Server');
+  const server = servers.find((s) => s.address && s.address());
+  const status = await post(server, { event: 'message_created', id: 9999 }, true);
+  assert.equal(status, 401);
 });
 
 test('consultant reply mutes the bot', async () => {

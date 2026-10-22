@@ -9,8 +9,8 @@ function required(name) {
 export const config = {
   port: Number(process.env.PORT || 3000),
 
-  // Path secret: Chatwoot calls https://<host>/webhook/<WEBHOOK_SECRET>
-  webhookSecret: required('WEBHOOK_SECRET'),
+  // Agent bot "secret" from Chatwoot; used to verify X-Chatwoot-Signature on every webhook.
+  webhookSecret: required('CHATWOOT_WEBHOOK_SECRET'),
 
   anthropicApiKey: required('ANTHROPIC_API_KEY'),
   model: process.env.ANTHROPIC_MODEL || 'claude-sonnet-5-5',

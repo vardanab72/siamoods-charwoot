@@ -20,7 +20,7 @@ and hands the conversation to a human when needed.
 |---|---|---|
 | `ANTHROPIC_API_KEY` | yes | — |
 | `CHATWOOT_BOT_TOKEN` | yes | agent bot access token |
-| `WEBHOOK_SECRET` | yes | random string; bot URL = `https://<host>/webhook/<secret>` |
+| `CHATWOOT_WEBHOOK_SECRET` | yes | the agent bot's secret (verifies X-Chatwoot-Signature); bot URL = `https://<host>/webhook` |
 | `ANTHROPIC_MODEL` | no | `claude-sonnet-5-5` (e.g. `claude-opus-5-5`, `claude-haiku-5-5`) |
 | `ALLOWED_INBOX_IDS` | no | all inboxes the bot is attached to |
 | `CHATWOOT_BASE_URL` | no | `https://chat.siamoods.com` |
