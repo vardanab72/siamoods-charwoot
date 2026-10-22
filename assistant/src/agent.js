@@ -106,8 +106,10 @@ export async function respond({ conversationId, channel, customerName, images })
       messages,
     });
 
+    // Only the latest round's text reaches the customer; text written between tool calls
+    // is the model's working notes.
     const texts = res.content.filter((b) => b.type === 'text').map((b) => b.text.trim()).filter(Boolean);
-    if (texts.length) outcome.text = [outcome.text, ...texts].filter(Boolean).join('\n\n');
+    if (texts.length) outcome.text = texts.join('\n\n');
 
     const toolUses = res.content.filter((b) => b.type === 'tool_use');
     if (res.stop_reason !== 'tool_use' || !toolUses.length) break;
