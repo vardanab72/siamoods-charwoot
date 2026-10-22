@@ -137,7 +137,10 @@ async function runTool(tu, { seenProducts, outcome, isWebsite }) {
   switch (tu.name) {
     case 'search_products': {
       const r = await searchProducts(input);
-      r.products.forEach((p) => seenProducts.set(p.url, p));
+      for (const p of r.products) {
+        seenProducts.set(p.url, p);
+        [...(p.matching_set_items || []), ...(p.suggested_chains || [])].forEach((x) => seenProducts.set(x.url, x));
+      }
       return r;
     }
     case 'get_product': {

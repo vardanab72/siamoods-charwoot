@@ -72,6 +72,9 @@ export async function taxonomyText() {
 
 // ---- Search ----
 
+const codeToSlug = new Map(); // filled from every search result
+const productCache = new Map(); // `${lang}:${slug}` -> { at, data }
+
 const SORTS = { newest: 0, price_high_to_low: 3, price_low_to_high: 4, biggest_discount: 5, popular: 7 };
 
 function shortProduct(p, lang) {
@@ -81,9 +84,12 @@ function shortProduct(p, lang) {
   const outOfStockSizes = (p.variations || [])
     .filter((v) => !(Number(v.available) > 0))
     .map((v) => v.title);
+  const code = (p.title || '').split(' ').pop();
+  if (code && p.slug) codeToSlug.set(`${lang}:${code.toUpperCase()}`, p.slug);
   return {
     title: p.title,
-    code: (p.title || '').split(' ').pop(),
+    code,
+    slug: p.slug,
     price_amd: p.price,
     discount_price_amd: p.discount ? p.discount_price : null,
     discount_percent: p.discount || null,
@@ -114,15 +120,25 @@ export async function searchProducts(input) {
   }
   const data = await getJson('/products', params);
   const limit = Math.min(Math.max(Number(input.limit) || 5, 1), 8);
-  return {
-    total_found: data.meta?.total ?? (data.data || []).length,
-    products: (data.data || []).slice(0, limit).map((p) => shortProduct(p, lang)),
-  };
+  const products = (data.data || []).slice(0, limit).map((p) => shortProduct(p, lang));
+  if (input.with_matching_sets) await attachMatchingSets(products, lang);
+  return { total_found: data.meta?.total ?? (data.data || []).length, products };
+}
+
+async function fetchProductDetail(slug, lang) {
+  const key = `${lang}:${slug}`;
+  const hit = productCache.get(key);
+  if (hit && Date.now() - hit.at < 10 * 60 * 1000) return hit.data;
+  const p = await getJson('/product', { lang, slug });
+  const d = p.data || p;
+  productCache.set(key, { at: Date.now(), data: d });
+  if (productCache.size > 500) productCache.delete(productCache.keys().next().value);
+  return d;
 }
 
 export async function getProduct(input) {
   const lang = normLang(input.lang);
-  let slug = input.slug;
+  let slug = input.slug || (input.code && codeToSlug.get(`${lang}:${String(input.code).toUpperCase()}`));
   if (!slug && input.code) {
     const found = await getJson('/products', { lang, search: input.code });
     const exact =
@@ -132,8 +148,7 @@ export async function getProduct(input) {
     slug = exact.slug;
   }
   if (!slug) return { found: false };
-  const p = await getJson('/product', { lang, slug });
-  const d = p.data || p;
+  const d = await fetchProductDetail(slug, lang);
   if (!d || !d.title) return { found: false };
   const matching = (d.related_products || []).map((x) => shortProduct(x, lang));
   const chains = (d.linked_products || []).map((x) => shortProduct(x, lang));
@@ -154,10 +169,13 @@ export async function getProduct(input) {
 
 // For several products at once: their matching set pieces (used to build sets).
 export async function getMatchingSets(input) {
-  const codes = (input.codes || []).slice(0, 4);
+  const refs = [
+    ...(input.slugs || []).map((slug) => ({ slug })),
+    ...(input.codes || []).map((code) => ({ code })),
+  ].slice(0, 6);
+  const found = await Promise.all(refs.map((r) => getProduct({ ...r, lang: input.lang }).catch(() => ({ found: false }))));
   const results = [];
-  for (const code of codes) {
-    const p = await getProduct({ code, lang: input.lang });
+  for (const p of found) {
     if (!p.found) continue;
     results.push({
       code: p.code,
@@ -173,4 +191,19 @@ export async function getMatchingSets(input) {
     });
   }
   return { products: results };
+}
+
+// Adds in-stock matching set pieces to search results (one parallel round of detail calls).
+async function attachMatchingSets(products, lang) {
+  await Promise.all(
+    products.map(async (p) => {
+      try {
+        const d = await fetchProductDetail(p.slug, lang);
+        const items = (d.related_products || []).map((x) => shortProduct(x, lang)).filter((x) => x.in_stock);
+        if (items.length) p.matching_set_items = items;
+        const chains = (d.linked_products || []).map((x) => shortProduct(x, lang)).filter((x) => x.in_stock);
+        if (chains.length) p.suggested_chains = chains.slice(0, 3);
+      } catch {}
+    }),
+  );
 }

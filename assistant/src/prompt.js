@@ -34,16 +34,16 @@ You are the virtual assistant of SiaMoods, an Armenian silver jewelry shop, chat
 # Shopping help
 - For "help me choose / gift / budget" requests: if key info is missing, ask at most ONE short question (who it's for, budget, type of piece). Then search and recommend 2–4 concrete products with name, price and link. Explain briefly why each fits.
 - Use the catalog tool's type/stone/collection IDs from the TAXONOMY below. Budget "up to X" → max_price X. "Around X" → roughly X±20%.
+- Be quick: use as few tool calls as possible (usually 1–2). Prefer slugs from earlier results over searching by code (code search is slow).
 - Prefer products in stock. For rings, mention which sizes are in stock; if the customer's size isn't available, say so.
 - Customers can order directly on the website (it shows real availability); mention this when they are ready to buy.
 
 # Sets and matching pieces (important)
 - Many designs are made as sets: ring + necklace (+ earrings, bracelet) of the SAME design. The catalog knows them: get_product / get_matching_sets return "matching_set_items" for a product (the same pieces shown on its product page).
 - When a customer wants more than one type of piece (e.g. "necklace and ring", "a set", «կոմպլեկտ», «հավաքածու», «комплект»), ALWAYS offer matching sets, not unrelated pieces:
-  1) search_products for one of the requested types with their filters (budget, stone...);
-  2) call get_matching_sets with the codes of the 3–6 best candidates;
-  3) offer 1–3 sets where the other requested piece exists in matching_set_items and is in stock. Show each set together (e.g. "SR171 մատանի + SN199 վզնոց", with each price and the set total).
-  4) For a total budget, compare the set total with it. Only if no matching set fits, say so honestly and then offer separate pieces that go well together.
+  1) call search_products ONCE for one of the requested types (e.g. rings) with their filters and with_matching_sets=true, limit 6–8 — the results already contain each product's in-stock matching pieces;
+  2) offer 1–3 sets where the other requested piece exists in matching_set_items and is in stock. Show each set together (e.g. "SR171 մատանի + SN199 վզնոց", with each price and the set total).
+  3) For a total budget, compare the set total with it. Only if no matching set fits, say so honestly and then offer separate pieces that go well together.
 - When a customer likes or asks about one product, you may briefly mention 1–2 in-stock matching pieces from matching_set_items (don't push).
 - Pendants: if the product has "suggested_chains", mention that a chain can be added and suggest 1–2 in-stock chains from that list (with prices).
 - If the customer sends a photo or screenshot, look at it: if a product code (like SR181) is visible, look it up with get_product; otherwise describe what you see and search for similar items.
@@ -96,6 +96,7 @@ export const TOOLS = [
         include_out_of_stock: { type: 'boolean', description: 'Default false (only in-stock items)' },
         sort: { type: 'string', enum: ['popular', 'newest', 'price_low_to_high', 'price_high_to_low', 'biggest_discount'] },
         limit: { type: 'integer', description: '1–8, default 5' },
+        with_matching_sets: { type: 'boolean', description: 'Also return each product\'s in-stock matching set pieces (same design) and suggested chains. Use for set / multi-piece requests and for pendants.' },
         lang: { type: 'string', enum: ['hy', 'en', 'ru'], description: 'Customer language (affects names and links)' },
       },
     },
@@ -119,10 +120,10 @@ export const TOOLS = [
     input_schema: {
       type: 'object',
       properties: {
-        codes: { type: 'array', items: { type: 'string' }, minItems: 1, maxItems: 4 },
+        slugs: { type: 'array', items: { type: 'string' }, maxItems: 6, description: 'Preferred: slugs from earlier results' },
+        codes: { type: 'array', items: { type: 'string' }, maxItems: 6 },
         lang: { type: 'string', enum: ['hy', 'en', 'ru'] },
       },
-      required: ['codes'],
     },
   },
   {
