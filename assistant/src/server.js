@@ -71,6 +71,15 @@ async function run(conversationId, entry) {
 }
 
 function handleEvent(ev) {
+  log.info('event', {
+    event: ev.event,
+    messageId: ev.id,
+    type: ev.message_type,
+    sender: ev.sender?.type,
+    conversationId: ev.conversation?.id,
+    status: ev.conversation?.status,
+    inbox: ev.conversation?.inbox_id || ev.inbox?.id,
+  });
   if (ev.event !== 'message_created') return;
   if (ev.account?.id && Number(ev.account.id) !== config.chatwootAccountId) return;
   if (!firstTime(ev.id)) return;
@@ -110,8 +119,8 @@ function handleEvent(ev) {
 
   store.append(conversationId, 'user', text);
 
-  if (conv.status && conv.status !== 'pending') return; // humans own this conversation
-  if (store.load(conversationId).mutedUntil > Date.now()) return;
+  if (conv.status && conv.status !== 'pending') return log.info('skip: humans own it', { conversationId, status: conv.status });
+  if (store.load(conversationId).mutedUntil > Date.now()) return log.info('skip: muted', { conversationId });
 
   schedule(
     conversationId,
