@@ -56,12 +56,21 @@ function contextBlock({ channel, customerName, introduced }) {
     .join('\n');
 }
 
-function toAnthropicMessages(history, images) {
+export function toAnthropicMessages(history, images) {
   const msgs = [];
   for (const h of history) {
     if (!msgs.length && h.role !== 'user') continue; // must start with the customer
-    msgs.push({ role: h.role, content: h.text });
+    const prev = msgs[msgs.length - 1];
+    if (prev && prev.role === h.role) prev.content += `\n${h.text}`;
+    else msgs.push({ role: h.role, content: h.text });
   }
+  // The request must end with the customer's turn. Automatic shop messages that arrived
+  // after it (away message, email box...) are folded into the customer's turn as context.
+  while (msgs.length > 1 && msgs[msgs.length - 1].role === 'assistant') {
+    const tail = msgs.pop();
+    msgs[msgs.length - 1].content += `\n[automatic shop message shown after this: ${tail.content}]`;
+  }
+  if (msgs.length && msgs[msgs.length - 1].role !== 'user') return [];
   if (images?.length && msgs.length && msgs[msgs.length - 1].role === 'user') {
     const last = msgs[msgs.length - 1];
     last.content = [

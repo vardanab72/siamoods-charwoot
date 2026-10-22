@@ -92,7 +92,9 @@ function handleEvent(ev) {
     return;
   }
   // Other outgoing/template messages (greeting, away message, n8n DMs): keep for context.
+  // Chatwoot's email-collect box is UI only, not worth remembering.
   if (ev.message_type === 'outgoing' || ev.message_type === 'template') {
+    if (ev.content_type === 'input_email') return;
     if (senderType !== 'agent_bot' && ev.content) store.append(conversationId, 'assistant', ev.content);
     return;
   }

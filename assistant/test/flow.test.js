@@ -159,5 +159,18 @@ test('consultant reply mutes the bot', async () => {
   });
   await wait(300);
   assert.equal(claudeRound, before, 'no AI call while muted');
-  setTimeout(() => process.exit(0), 50);
 });
+
+test('conversation always ends with the customer turn', async () => {
+  const { toAnthropicMessages } = await import('../src/agent.js');
+  const m = toAnthropicMessages([
+    { role: 'assistant', text: 'greeting' },
+    { role: 'user', text: 'barev' },
+    { role: 'assistant', text: 'away message' },
+  ]);
+  assert.equal(m.length, 1);
+  assert.equal(m[0].role, 'user');
+  assert.match(m[0].content, /away message/);
+});
+
+test('exit', () => { setTimeout(() => process.exit(0), 50); });
