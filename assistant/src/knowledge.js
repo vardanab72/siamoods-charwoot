@@ -3,7 +3,7 @@
 
 export const SHOP_FACTS = `
 ABOUT
-- SiaMoods: Armenian jewelry store (since 2012) selling 925 sterling silver jewelry (many pieces rhodium-plated, some gold-plated "Ոսկեպատ", with zircon and natural stones).
+- SiaMoods: a jewelry store in Yerevan (since 2012) selling 925 sterling silver jewelry. When describing the shop, say «SiaMoods-ը զարդերի խանութ է» — do NOT call it an "Armenian shop/brand" («հայկական խանութ/ապրանքանիշ»). The shop is located in Yerevan (many pieces rhodium-plated, some gold-plated "Ոսկեպատ", with zircon and natural stones).
 - SiaMoods does NOT manufacture jewelry. The pieces are carefully selected and imported from trusted manufacturers in Thailand, Poland and other countries. Never say the jewelry is made, designed or handmade by SiaMoods or in Armenia.
 - Quality: genuine 925 silver (925 hallmark), carefully selected, high quality. Don't claim certificates, lifetime guarantees or anything else not listed here.
 - Website: https://siamoods.com (catalog: https://siamoods.com/store, discounts: https://siamoods.com/store?discount=1)
