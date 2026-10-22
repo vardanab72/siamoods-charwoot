@@ -135,6 +135,8 @@ export async function getProduct(input) {
   const p = await getJson('/product', { lang, slug });
   const d = p.data || p;
   if (!d || !d.title) return { found: false };
+  const matching = (d.related_products || []).map((x) => shortProduct(x, lang));
+  const chains = (d.linked_products || []).map((x) => shortProduct(x, lang));
   return {
     found: true,
     ...shortProduct(d, lang),
@@ -143,5 +145,32 @@ export async function getProduct(input) {
     weight: d.weight || undefined,
     dimensions: d.size || undefined,
     variation_type: d.variation_type || undefined,
+    // Pieces of the same design/set shown on the product page ("matching items")
+    matching_set_items: matching.length ? matching : undefined,
+    // Chains suggested for this pendant on the product page
+    suggested_chains: chains.length ? chains.slice(0, 4) : undefined,
   };
+}
+
+// For several products at once: their matching set pieces (used to build sets).
+export async function getMatchingSets(input) {
+  const codes = (input.codes || []).slice(0, 4);
+  const results = [];
+  for (const code of codes) {
+    const p = await getProduct({ code, lang: input.lang });
+    if (!p.found) continue;
+    results.push({
+      code: p.code,
+      title: p.title,
+      price_amd: p.price_amd,
+      discount_price_amd: p.discount_price_amd,
+      in_stock: p.in_stock,
+      sizes_in_stock: p.sizes_in_stock,
+      url: p.url,
+      image: p.image,
+      matching_set_items: p.matching_set_items || [],
+      suggested_chains: p.suggested_chains,
+    });
+  }
+  return { products: results };
 }

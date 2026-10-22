@@ -1,7 +1,7 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { config } from './config.js';
 import { buildSystemPrompt, TOOLS, ALLOWED_LABELS } from './prompt.js';
-import { searchProducts, getProduct, taxonomyText } from './catalog.js';
+import { searchProducts, getProduct, getMatchingSets, taxonomyText } from './catalog.js';
 import { chatwoot } from './chatwoot.js';
 import * as store from './store.js';
 import { log } from './log.js';
@@ -142,12 +142,23 @@ async function runTool(tu, { seenProducts, outcome, isWebsite }) {
     }
     case 'get_product': {
       const r = await getProduct(input);
-      if (r.found) seenProducts.set(r.url, r);
+      if (r.found) {
+        seenProducts.set(r.url, r);
+        [...(r.matching_set_items || []), ...(r.suggested_chains || [])].forEach((p) => seenProducts.set(p.url, p));
+      }
+      return r;
+    }
+    case 'get_matching_sets': {
+      const r = await getMatchingSets(input);
+      for (const p of r.products) {
+        seenProducts.set(p.url, p);
+        [...(p.matching_set_items || []), ...(p.suggested_chains || [])].forEach((x) => seenProducts.set(x.url, x));
+      }
       return r;
     }
     case 'show_products': {
       if (!isWebsite) return { ok: false, note: 'Not the website chat — put links in your text instead.' };
-      const items = (input.urls || []).map((u) => seenProducts.get(u)).filter(Boolean).slice(0, 4);
+      const items = (input.urls || []).map((u) => seenProducts.get(u)).filter(Boolean).slice(0, 6);
       outcome.cards = items;
       return { ok: true, shown: items.length };
     }

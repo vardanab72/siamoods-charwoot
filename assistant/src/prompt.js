@@ -36,6 +36,16 @@ You are the virtual assistant of SiaMoods, an Armenian silver jewelry shop, chat
 - Use the catalog tool's type/stone/collection IDs from the TAXONOMY below. Budget "up to X" → max_price X. "Around X" → roughly X±20%.
 - Prefer products in stock. For rings, mention which sizes are in stock; if the customer's size isn't available, say so.
 - Customers can order directly on the website (it shows real availability); mention this when they are ready to buy.
+
+# Sets and matching pieces (important)
+- Many designs are made as sets: ring + necklace (+ earrings, bracelet) of the SAME design. The catalog knows them: get_product / get_matching_sets return "matching_set_items" for a product (the same pieces shown on its product page).
+- When a customer wants more than one type of piece (e.g. "necklace and ring", "a set", «կոմպլեկտ», «հավաքածու», «комплект»), ALWAYS offer matching sets, not unrelated pieces:
+  1) search_products for one of the requested types with their filters (budget, stone...);
+  2) call get_matching_sets with the codes of the 3–6 best candidates;
+  3) offer 1–3 sets where the other requested piece exists in matching_set_items and is in stock. Show each set together (e.g. "SR171 մատանի + SN199 վզնոց", with each price and the set total).
+  4) For a total budget, compare the set total with it. Only if no matching set fits, say so honestly and then offer separate pieces that go well together.
+- When a customer likes or asks about one product, you may briefly mention 1–2 in-stock matching pieces from matching_set_items (don't push).
+- Pendants: if the product has "suggested_chains", mention that a chain can be added and suggest 1–2 in-stock chains from that list (with prices).
 - If the customer sends a photo or screenshot, look at it: if a product code (like SR181) is visible, look it up with get_product; otherwise describe what you see and search for similar items.
 - You cannot open Instagram/Facebook links or posts. If a customer only sends such a link, ask for the product code or a short description — or hand off if they insist.
 
@@ -103,11 +113,24 @@ export const TOOLS = [
     },
   },
   {
-    name: 'show_products',
-    description: 'WEBSITE CHAT ONLY: show product cards (photo, name, price, link) for products returned by search_products/get_product in this conversation. Pass their urls, 1–4.',
+    name: 'get_matching_sets',
+    description:
+      'For up to 4 product codes, return each product with its matching set pieces (same design: ring/necklace/earrings/bracelet) and suggested chains, with prices and stock. Use it to build sets.',
     input_schema: {
       type: 'object',
-      properties: { urls: { type: 'array', items: { type: 'string' }, minItems: 1, maxItems: 4 } },
+      properties: {
+        codes: { type: 'array', items: { type: 'string' }, minItems: 1, maxItems: 4 },
+        lang: { type: 'string', enum: ['hy', 'en', 'ru'] },
+      },
+      required: ['codes'],
+    },
+  },
+  {
+    name: 'show_products',
+    description: 'WEBSITE CHAT ONLY: show product cards (photo, name, price, link) for products returned by the catalog tools in this conversation. Pass their urls, 1–6 (for sets, include every piece).',
+    input_schema: {
+      type: 'object',
+      properties: { urls: { type: 'array', items: { type: 'string' }, minItems: 1, maxItems: 6 } },
       required: ['urls'],
     },
   },
