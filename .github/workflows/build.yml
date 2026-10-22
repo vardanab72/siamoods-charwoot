@@ -3,6 +3,7 @@ name: Build Chatwoot image (Armenian widget)
 on:
   push:
     branches: [main]
+    paths-ignore: ['assistant/**', '.github/workflows/assistant.yml']
   workflow_dispatch:
 
 permissions:
