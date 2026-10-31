@@ -173,4 +173,15 @@ test('conversation always ends with the customer turn', async () => {
   assert.match(m[0].content, /away message/);
 });
 
+test('n8n echo keeps the bot active, a phone reply mutes it', async () => {
+  const servers = process._getActiveHandles().filter((h) => h.constructor?.name === 'Server');
+  const server = servers.find((s) => s.address && s.address());
+  const store = await import('../src/store.js');
+  const base = { event: 'message_created', private: false, conversation: { id: 77, status: 'pending', channel: 'Channel::Instagram', inbox_id: 2 }, account: { id: 2 } };
+  await post(server, { ...base, id: 3001, message_type: 'outgoing', content: 'մանրամասների և պատվիրելու համար https://siamoods.com/product/x', content_attributes: { external_echo: true }, sender: null });
+  assert.ok(!(store.load(77).mutedUntil > Date.now()), 'n8n DM must not mute');
+  await post(server, { ...base, id: 3002, message_type: 'outgoing', content: 'Ողջույն, այո ունենք', content_attributes: { external_echo: true }, sender: null });
+  assert.ok(store.load(77).mutedUntil > Date.now(), 'phone reply mutes');
+});
+
 test('exit', () => { setTimeout(() => process.exit(0), 50); });

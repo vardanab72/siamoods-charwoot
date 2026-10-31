@@ -100,7 +100,16 @@ function handleEvent(ev) {
     store.append(conversationId, 'assistant', ev.content || '');
     return;
   }
-  // Other outgoing/template messages (greeting, away message, n8n DMs): keep for context.
+  // Replies sent outside Chatwoot (Instagram app, Meta Business Suite) arrive as "echo" messages.
+  // Automated ones (n8n comment→DM, Meta FAQ answers) are kept as context; anything else
+  // means a person answered from the phone → the bot steps back.
+  if (ev.message_type === 'outgoing' && ev.content_attributes?.external_echo && senderType !== 'agent_bot') {
+    store.append(conversationId, 'assistant', ev.content || '[shop sent an attachment]');
+    if (isAutomatedEcho(ev.content)) return log.info('echo: automated', { conversationId });
+    store.update(conversationId, { mutedUntil: Date.now() + HUMAN_MUTE_MS });
+    return log.info('echo: human replied from phone → muted', { conversationId });
+  }
+  // Other outgoing/template messages (greeting, away message): keep for context.
   // Chatwoot's email-collect box is UI only, not worth remembering.
   if (ev.message_type === 'outgoing' || ev.message_type === 'template') {
     if (ev.content_type === 'input_email') return;
@@ -108,6 +117,15 @@ function handleEvent(ev) {
     return;
   }
   if (ev.message_type !== 'incoming') return;
+
+  // Test mode: only answer the listed contacts; everyone else goes straight to humans.
+  const contactId = Number(ev.sender?.id || conv.meta?.sender?.id || conv.contact_inbox?.contact_id);
+  if (config.testContactIds.length && !config.testContactIds.includes(contactId)) {
+    if (conv.status === 'pending') {
+      chatwoot.openForHumans(conversationId).catch((err) => log.warn('open failed', { err: String(err) }));
+    }
+    return log.info('skip: not a test contact', { conversationId, contactId });
+  }
 
   const attachments = ev.attachments || [];
   const images = attachments.filter((a) => a.file_type === 'image' && a.data_url).map((a) => a.data_url);
@@ -127,6 +145,11 @@ function handleEvent(ev) {
     { channel: conv.channel, customerName: ev.sender?.name || conv.meta?.sender?.name },
     images,
   );
+}
+
+export function isAutomatedEcho(content) {
+  const text = String(content || '').trim();
+  return config.automatedEchoPatterns.some((re) => re.test(text));
 }
 
 // Chatwoot: X-Chatwoot-Signature = "sha256=" + HMAC_SHA256(secret, `${timestamp}.${body}`)

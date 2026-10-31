@@ -34,6 +34,30 @@ export const config = {
     .map((s) => Number(s.trim()))
     .filter(Boolean),
 
+  // Test mode: when set (comma-separated Chatwoot contact IDs), only these contacts get AI replies;
+  // other conversations are opened for humans immediately.
+  testContactIds: (process.env.TEST_CONTACT_IDS || '')
+    .split(',')
+    .map((s) => Number(s.trim()))
+    .filter(Boolean),
+
+  // Echo messages (sent outside Chatwoot) that are automatic, not a person answering.
+  // Default: n8n comment→DM messages and Meta's FAQ / welcome / away texts.
+  automatedEchoPatterns: (
+    process.env.AUTOMATED_ECHO_PATTERNS ||
+    [
+      '^մանրամասների և պատվիրելու համար',
+      '^Մենք Ձեզ շուտով կպատասխանենք',
+      '^✅ Անվճար առաքում Հայփոստով',
+      '^🤗 Հարգելի',
+      '^🙂 Ողջույն .*շնորհակալություն հաղորդագրության համար',
+    ].join('||')
+  )
+    .split('||')
+    .map((p) => p.trim())
+    .filter(Boolean)
+    .map((p) => new RegExp(p, 'u')),
+
   dataDir: process.env.DATA_DIR || '/data',
   timezone: 'Asia/Yerevan',
 };
