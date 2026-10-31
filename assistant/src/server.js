@@ -120,7 +120,8 @@ function handleEvent(ev) {
 
   // Test mode: only answer the listed contacts; everyone else goes straight to humans.
   const contactId = Number(ev.sender?.id || conv.meta?.sender?.id || conv.contact_inbox?.contact_id);
-  if (config.testContactIds.length && !config.testContactIds.includes(contactId)) {
+  const isMeta = conv.channel === 'Channel::FacebookPage' || conv.channel === 'Channel::Instagram';
+  if (isMeta && config.testContactIds.length && !config.testContactIds.includes(contactId)) {
     if (conv.status === 'pending') {
       chatwoot.openForHumans(conversationId).catch((err) => log.warn('open failed', { err: String(err) }));
     }

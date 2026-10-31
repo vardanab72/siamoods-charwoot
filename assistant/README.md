@@ -27,7 +27,7 @@ and hands the conversation to a human when needed.
 | `CHATWOOT_ACCOUNT_ID` | no | `2` |
 | `SITE_API_BASE_URL` | no | `https://admin.siamoods.com/api` |
 | `DEBOUNCE_MS` | no | `3500` |
-| `TEST_CONTACT_IDS` | no | test mode: only these Chatwoot contact IDs get AI replies; others go to humans |
+| `TEST_CONTACT_IDS` | no | test mode for Messenger/Instagram: only these Chatwoot contact IDs get AI replies; others go to humans |
 | `AUTOMATED_ECHO_PATTERNS` | no | `||`-separated regexes for automatic echo messages (n8n, Meta FAQ) that must not silence the bot |
 
 Persistent volume: `/data` (conversation history for context, auto-cleaned after 60 days).
