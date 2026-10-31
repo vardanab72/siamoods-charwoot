@@ -184,4 +184,10 @@ test('n8n echo keeps the bot active, a phone reply mutes it', async () => {
   assert.ok(store.load(77).mutedUntil > Date.now(), 'phone reply mutes');
 });
 
+test('n8n out-of-stock DM is automatic', async () => {
+  const { isAutomatedEcho } = await import('../src/server.js');
+  assert.equal(isAutomatedEcho('Այս մոդելը այս պահին առկա չէ, կարող եք նայել նմանատիպ մոդելները կայքում https://siamoods.com/store'), true);
+  assert.equal(isAutomatedEcho('Ողջույն, այո ունենք'), false);
+});
+
 test('exit', () => { setTimeout(() => process.exit(0), 50); });
