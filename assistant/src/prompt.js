@@ -73,6 +73,7 @@ When handing off: tell the customer kindly that you're passing the conversation 
 - Call add_labels once when the topic is clear (allowed: ${ALLOWED_LABELS.join(', ')}). Don't call it repeatedly.
 
 # Output
+- Always end with a short text message to the customer (cards alone are never enough).
 - Everything you write as text is sent to the customer. Don't write notes to yourself, summaries of tool results, or English remarks in an Armenian chat. Call tools silently; write the customer message only once you have what you need.
 
 # Channel formatting
@@ -92,7 +93,7 @@ export const TOOLS = [
   {
     name: 'search_products',
     description:
-      'Search the live SiaMoods catalog. Returns real products with prices (AMD), stock, sizes in stock and links. Use type/stone/collection IDs from the TAXONOMY. Combine filters; use query for free text like a product code or a word from the name.',
+      'Search the live SiaMoods catalog. Returns real products with prices (AMD), stock, sizes in stock and links. Use type/stone/collection IDs from the TAXONOMY. Combine filters; use query for free text like a product code. Results do NOT tell what a piece looks like — for any shape/motif request you must check candidates with look_at_products before offering them.',
     input_schema: {
       type: 'object',
       properties: {

@@ -112,6 +112,13 @@ export async function respond({ conversationId, channel, customerName, images })
     if (texts.length) outcome.text = texts.join('\n\n');
 
     const toolUses = res.content.filter((b) => b.type === 'tool_use');
+    log.info('ai round', {
+      round,
+      stop: res.stop_reason,
+      textChars: texts.join('').length,
+      tools: toolUses.map((t) => `${t.name}(${JSON.stringify(t.input).slice(0, 160)})`),
+      usage: res.usage && { in: res.usage.input_tokens, out: res.usage.output_tokens, cacheRead: res.usage.cache_read_input_tokens },
+    });
     if (res.stop_reason !== 'tool_use' || !toolUses.length) break;
 
     messages.push({ role: 'assistant', content: res.content });
@@ -131,7 +138,36 @@ export async function respond({ conversationId, channel, customerName, images })
     messages.push({ role: 'user', content: results });
   }
 
+  // Safety net: never send cards without a message. Ask once more for the customer text only.
+  if (!outcome.text) {
+    messages.push({ role: 'user', content: '[system] Write your reply to the customer now (text only, no tools).' });
+    const res = await anthropic.messages.create({
+      model: config.model,
+      max_tokens: config.maxTokens,
+      system,
+      tools: TOOLS,
+      tool_choice: { type: 'none' },
+      messages: fixAlternation(messages),
+    });
+    outcome.text = res.content.filter((b) => b.type === 'text').map((b) => b.text.trim()).filter(Boolean).join('\n\n');
+    log.info('ai fallback text', { textChars: outcome.text.length });
+  }
+
   return outcome;
+}
+
+// Merge consecutive user turns (tool results + the reminder) so roles alternate.
+function fixAlternation(messages) {
+  const out = [];
+  for (const m of messages) {
+    const prev = out[out.length - 1];
+    if (prev && prev.role === m.role && m.role === 'user') {
+      const a = Array.isArray(prev.content) ? prev.content : [{ type: 'text', text: prev.content }];
+      const b = Array.isArray(m.content) ? m.content : [{ type: 'text', text: m.content }];
+      prev.content = [...a, ...b];
+    } else out.push({ ...m });
+  }
+  return out;
 }
 
 async function runTool(tu, { seenProducts, outcome, isWebsite }) {
