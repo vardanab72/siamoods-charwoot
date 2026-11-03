@@ -38,6 +38,14 @@ You are the virtual assistant of SiaMoods, an Armenian silver jewelry shop, chat
 - Prefer products in stock. For rings, mention which sizes are in stock; if the customer's size isn't available, say so.
 - Customers can order directly on the website (it shows real availability); mention this when they are ready to buy.
 
+# Shapes and motifs (important)
+- Product names and descriptions do NOT say what a piece looks like (e.g. "Արծաթյա կախազարդ SP615" can be a penguin). Never guess a shape from the name or the category.
+- When the customer asks for a specific shape, motif or symbol (baby foot «երեխայի ոտք/թաթիկ», heart, butterfly, letter, cross, angel, animal, flower, infinity, star, moon, evil eye, etc.):
+  1) search_products with the right type and, if one fits, a collection/theme ID from the TAXONOMY (e.g. Սիրտ, Խաչ, Կենդանիներ, Մանկական, Աստղ, Հրեշտակ), limit 8; if that gives few results, also search the type without the theme;
+  2) call look_at_products on the candidates;
+  3) offer ONLY the products whose photo clearly shows that motif. If none does, say honestly that this model isn't available right now (e.g. «Ցավոք, երեխայի ոտքի թաթիկով կախազարդ այս պահին չունենք»), and you may offer 1–2 close alternatives clearly described as different (e.g. other children's pendants).
+- Never ask the customer to check a photo to see if it's what they want — check it yourself first.
+
 # Sets and matching pieces (important)
 - Many designs are made as sets: ring + necklace (+ earrings, bracelet) of the SAME design. The catalog knows them: get_product / get_matching_sets return "matching_set_items" for a product (the same pieces shown on its product page).
 - When a customer wants more than one type of piece (e.g. "necklace and ring", "a set", «կոմպլեկտ», «հավաքածու», «комплект»), ALWAYS offer matching sets, not unrelated pieces:
@@ -126,6 +134,16 @@ export const TOOLS = [
         codes: { type: 'array', items: { type: 'string' }, maxItems: 6 },
         lang: { type: 'string', enum: ['hy', 'en', 'ru'] },
       },
+    },
+  },
+  {
+    name: 'look_at_products',
+    description:
+      'Look at the main photos of up to 8 products returned by the catalog tools (pass their urls). Use it to check shape, motif or style, which product names and descriptions do not mention.',
+    input_schema: {
+      type: 'object',
+      properties: { urls: { type: 'array', items: { type: 'string' }, minItems: 1, maxItems: 8 } },
+      required: ['urls'],
     },
   },
   {

@@ -124,7 +124,9 @@ export async function respond({ conversationId, channel, customerName, images })
         log.warn('tool failed', { tool: tu.name, err: String(err) });
         result = { error: 'Temporary error, the catalog is unavailable right now.' };
       }
-      results.push({ type: 'tool_result', tool_use_id: tu.id, content: JSON.stringify(result) });
+      // A tool may return ready content blocks (e.g. product photos for the model to look at).
+      const content = result && Array.isArray(result.__content) ? result.__content : JSON.stringify(result);
+      results.push({ type: 'tool_result', tool_use_id: tu.id, content });
     }
     messages.push({ role: 'user', content: results });
   }
@@ -158,6 +160,17 @@ async function runTool(tu, { seenProducts, outcome, isWebsite }) {
         [...(p.matching_set_items || []), ...(p.suggested_chains || [])].forEach((x) => seenProducts.set(x.url, x));
       }
       return r;
+    }
+    case 'look_at_products': {
+      const items = (input.urls || []).map((u) => seenProducts.get(u)).filter((p) => p && p.image).slice(0, 8);
+      if (!items.length) return { error: 'No photos: pass urls of products returned by the catalog tools.' };
+      const content = [];
+      items.forEach((p, i) => {
+        content.push({ type: 'text', text: `Photo ${i + 1}: ${p.title} — ${p.url}` });
+        content.push({ type: 'image', source: { type: 'url', url: p.image } });
+      });
+      content.push({ type: 'text', text: 'Judge each photo honestly. Offer only products whose photo clearly shows what the customer asked for.' });
+      return { __content: content };
     }
     case 'show_products': {
       if (!isWebsite) return { ok: false, note: 'Not the website chat — put links in your text instead.' };
