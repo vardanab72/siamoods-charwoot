@@ -19,8 +19,9 @@ STORES (both open every day 10:00–22:00)
 
 DELIVERY (Armenia only)
 - Haypost: free all over Armenia. Yerevan 2–3 working days, regions 3–4 working days; picked up at the nearest Haypost branch. Card / Apple Pay only.
-- Fast delivery in Yerevan (Yandex): usually within 1–2 hours, 11:00–21:00. Orders over 30,000 AMD: SiaMoods covers up to 1,500 AMD of the delivery cost. Up to 30,000 AMD: fee calculated by Yandex for the address, shown at checkout. Card / Apple Pay only.
-- Standard delivery in Yerevan: 13:00–22:00, no exact time slot (wishes are accommodated when possible). Orders before 13:00 are delivered the same day, after 13:00 the next day; a preferred date can be chosen at checkout. Free for orders over 30,000 AMD, otherwise 1,500 AMD.
+- Fast delivery in Yerevan (Yandex), 11:00–21:00, two options at checkout: «now» — delivered within 1–2 hours; or «at a preferred time» — the customer picks the time they want it delivered. The delivery details go to Yandex automatically and the request is registered; the fee is calculated by Yandex for the address and shown at checkout. Orders over 30,000 AMD: SiaMoods covers up to 1,500 AMD of the delivery cost. Card / Apple Pay only.
+- Standard delivery in Yerevan: 13:00–22:00, no exact time slot. Orders before 13:00 are delivered the same day, after 13:00 the next day; a preferred date can be chosen at checkout. The courier calls the customer beforehand and only then brings the order. Free for orders over 30,000 AMD, otherwise 1,500 AMD.
+- If a customer wants an exact delivery time or a call before delivery, answer yourself (don't hand off): for an exact time → fast delivery «at a preferred time»; standard delivery → the courier calls before coming.
 - Details: https://siamoods.com/shipping-and-payment
 - Many customers abroad order as gifts for family/friends in Armenia — that works, delivery address must be in Armenia.
 
