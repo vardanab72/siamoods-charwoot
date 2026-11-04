@@ -7,6 +7,7 @@ import * as store from './store.js';
 import { log } from './log.js';
 
 const anthropic = new Anthropic({ apiKey: config.anthropicApiKey });
+const ACTION_TOOLS = new Set(['add_labels', 'show_products', 'handoff_to_human']);
 
 let systemPromptCache = { text: null, at: 0 };
 async function systemPrompt() {
@@ -97,6 +98,7 @@ export async function respond({ conversationId, channel, customerName, images })
 
   const isWebsite = channelName(channel) === 'WEBSITE';
 
+  const keptTexts = [];
   for (let round = 0; round <= config.maxToolRounds; round++) {
     const res = await anthropic.messages.create({
       model: config.model,
@@ -106,12 +108,17 @@ export async function respond({ conversationId, channel, customerName, images })
       messages,
     });
 
-    // Only the latest round's text reaches the customer; text written between tool calls
-    // is the model's working notes.
     const texts = res.content.filter((b) => b.type === 'text').map((b) => b.text.trim()).filter(Boolean);
-    if (texts.length) outcome.text = texts.join('\n\n');
-
     const toolUses = res.content.filter((b) => b.type === 'tool_use');
+    // Text written before an information tool (search, look at photos...) is the model's
+    // working notes and is dropped. Text in a final round, or next to action tools only
+    // (labels, cards, handoff), is the customer reply — keep all of it, across rounds.
+    const infoRound = toolUses.some((t) => !ACTION_TOOLS.has(t.name));
+    if (texts.length && !infoRound) {
+      for (const t of texts) if (!keptTexts.includes(t)) keptTexts.push(t);
+      outcome.text = keptTexts.join('\n\n');
+    }
+
     log.info('ai round', {
       round,
       stop: res.stop_reason,

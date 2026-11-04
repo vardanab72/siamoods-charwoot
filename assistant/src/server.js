@@ -140,6 +140,8 @@ function handleEvent(ev) {
 
   if (conv.status && conv.status !== 'pending') return log.info('skip: humans own it', { conversationId, status: conv.status });
   if (store.load(conversationId).mutedUntil > Date.now()) return log.info('skip: muted', { conversationId });
+  // A lone «։», "." or emoji/reaction needs no answer (it stays in history as context).
+  if (!attachments.length && !/[\p{L}\p{N}]/u.test(text)) return log.info('skip: no words', { conversationId });
 
   schedule(
     conversationId,

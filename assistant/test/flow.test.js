@@ -190,4 +190,17 @@ test('n8n out-of-stock DM is automatic', async () => {
   assert.equal(isAutomatedEcho('Ողջույն, այո ունենք'), false);
 });
 
+test('a lone «։» gets no AI reply', async () => {
+  const servers = process._getActiveHandles().filter((h) => h.constructor?.name === 'Server');
+  const server = servers.find((s) => s.address && s.address());
+  const before = claudeRound;
+  await post(server, {
+    event: 'message_created', id: 4001, message_type: 'incoming', private: false, content: '։',
+    sender: { type: 'contact' }, conversation: { id: 88, status: 'pending', channel: 'Channel::Instagram', inbox_id: 2 },
+    account: { id: 2 },
+  });
+  await wait(300);
+  assert.equal(claudeRound, before);
+});
+
 test('exit', () => { setTimeout(() => process.exit(0), 50); });
