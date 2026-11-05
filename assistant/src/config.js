@@ -59,6 +59,10 @@ export const config = {
     .filter(Boolean)
     .map((p) => new RegExp(p, 'u')),
 
+  // Optional: URL that returns { caption, permalink } for an Instagram media id (?id=...),
+  // e.g. an n8n webhook using the shop's Instagram token. Used for posts customers share in DM.
+  igCaptionUrl: (process.env.IG_CAPTION_URL || '').trim(),
+
   dataDir: process.env.DATA_DIR || '/data',
   timezone: 'Asia/Yerevan',
 };

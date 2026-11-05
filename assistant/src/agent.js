@@ -84,7 +84,9 @@ export function toAnthropicMessages(history, images) {
   if (images?.length && msgs.length && msgs[msgs.length - 1].role === 'user') {
     const last = msgs[msgs.length - 1];
     last.content = [
-      ...images.slice(0, 3).map((url) => ({ type: 'image', source: { type: 'url', url } })),
+      ...images.slice(0, 3).map((img) =>
+        typeof img === 'string' ? { type: 'image', source: { type: 'url', url: img } } : img,
+      ),
       { type: 'text', text: last.content || '(photo)' },
     ];
   }
@@ -92,9 +94,27 @@ export function toAnthropicMessages(history, images) {
 }
 
 // Runs one assistant turn for a conversation. Returns a summary of what happened.
+// Download customer images ourselves (Instagram CDN links may not be reachable by URL).
+async function imageBlock(url) {
+  try {
+    const res = await fetch(url, { signal: AbortSignal.timeout(15000) });
+    const type = (res.headers.get('content-type') || '').split(';')[0];
+    if (!res.ok || !/^image\/(jpeg|png|gif|webp)$/.test(type)) throw new Error(`HTTP ${res.status} ${type}`);
+    const buf = Buffer.from(await res.arrayBuffer());
+    if (buf.length > 4.5 * 1024 * 1024) throw new Error('too large');
+    return { type: 'image', source: { type: 'base64', media_type: type, data: buf.toString('base64') } };
+  } catch (err) {
+    log.warn('image download failed, passing url', { err: String(err) });
+    return { type: 'image', source: { type: 'url', url } };
+  }
+}
+
 export async function respond({ conversationId, channel, customerName, images }) {
   const state = store.load(conversationId);
-  const messages = toAnthropicMessages(state.history, images);
+  // A follow-up like "price?" right after a photo/shared post still needs that picture.
+  let urls = images || [];
+  if (!urls.length && state.recentImages && Date.now() - state.recentImages.at < 2 * 3600 * 1000) urls = state.recentImages.urls;
+  const messages = toAnthropicMessages(state.history, await Promise.all(urls.slice(0, 3).map(imageBlock)));
   if (!messages.length) return { skipped: 'no customer message' };
 
   const seenProducts = new Map(); // url -> product, for show_products

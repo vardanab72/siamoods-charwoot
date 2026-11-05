@@ -14,6 +14,7 @@ Object.assign(process.env, {
   DATA_DIR: tmp,
   DEBOUNCE_MS: '50',
   PORT: '0',
+  IG_CAPTION_URL: 'https://n8n.example/webhook/ig-caption',
 });
 
 const calls = [];
@@ -34,6 +35,7 @@ globalThis.fetch = async (url, opts = {}) => {
   const json = (obj, status = 200) =>
     new Response(JSON.stringify(obj), { status, headers: { 'content-type': 'application/json' } });
 
+  if (u.startsWith('https://n8n.example/webhook/ig-caption')) return json({ caption: 'Արծաթյա վզնոց SN286 ✨ 29.500 ֏', id: new URL(u).searchParams.get('id') });
   if (u.includes('/store-data')) {
     return json({ types: [{ id: 27456, name: 'Մատանիներ' }], stones: [{ id: 27471, name: 'Ցիրկոն' }], collections: [] });
   }
@@ -201,6 +203,22 @@ test('a lone «։» gets no AI reply', async () => {
   });
   await wait(300);
   assert.equal(claudeRound, before);
+});
+
+test('shared Instagram post: caption is looked up and kept', async () => {
+  const servers = process._getActiveHandles().filter((h) => h.constructor?.name === 'Server');
+  const server = servers.find((s) => s.address && s.address());
+  await post(server, {
+    event: 'message_created', id: 5001, message_type: 'incoming', private: false, content: null,
+    attachments: [{ file_type: 'ig_post', content_type: 'image/jpeg', data_url: 'https://lookaside.fbsbx.com/ig_messaging_cdn/?asset_id=17999756918938883&signature=x' }],
+    sender: { type: 'contact' }, conversation: { id: 99, status: 'open', channel: 'Channel::Instagram', inbox_id: 2 },
+    account: { id: 2 },
+  });
+  await wait(200);
+  const st = store.load(99);
+  assert.match(st.history.at(-1).text, /Instagram post .*SN286/);
+  assert.ok(calls.some((c) => c.url.includes('ig-caption?id=17999756918938883')));
+  assert.equal(st.recentImages.urls.length, 1);
 });
 
 test('exit', () => { setTimeout(() => process.exit(0), 50); });

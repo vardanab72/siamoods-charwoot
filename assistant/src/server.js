@@ -10,6 +10,26 @@ import * as store from './store.js';
 import { respond, deliver, handOff } from './agent.js';
 import { chatwoot } from './chatwoot.js';
 
+const SHARED_MEDIA = new Set(['ig_post', 'ig_reel', 'ig_story', 'story_mention', 'share']);
+
+// Caption of one of our Instagram posts, from its media id (asset_id in the CDN link).
+async function instagramCaption(dataUrl) {
+  if (!config.igCaptionUrl) return '';
+  try {
+    const id = new URL(dataUrl).searchParams.get('asset_id');
+    if (!/^\d+$/.test(id || '')) return '';
+    const res = await fetch(`${config.igCaptionUrl}${config.igCaptionUrl.includes('?') ? '&' : '?'}id=${id}`, {
+      signal: AbortSignal.timeout(8000),
+    });
+    if (!res.ok) return '';
+    const data = await res.json();
+    return String((Array.isArray(data) ? data[0] : data)?.caption || '').trim();
+  } catch (err) {
+    log.warn('caption lookup failed', { err: String(err) });
+    return '';
+  }
+}
+
 const HUMAN_MUTE_MS = 12 * 3600 * 1000; // after a consultant writes, stay quiet for 12h
 
 const seen = new Set();
@@ -70,7 +90,7 @@ async function run(conversationId, entry) {
   }
 }
 
-function handleEvent(ev) {
+async function handleEvent(ev) {
   log.info('event', {
     event: ev.event,
     messageId: ev.id,
@@ -129,14 +149,28 @@ function handleEvent(ev) {
   }
 
   const attachments = ev.attachments || [];
-  const images = attachments.filter((a) => a.file_type === 'image' && a.data_url).map((a) => a.data_url);
-  const other = attachments.filter((a) => a.file_type !== 'image').map((a) => a.file_type);
+  // Photos, and Instagram posts/reels/stories shared in DM (they arrive with the post's image).
+  const isPicture = (a) =>
+    a.data_url && (a.file_type === 'image' || (SHARED_MEDIA.has(a.file_type) && /^image\//.test(a.content_type || 'image/')));
+  const pictures = attachments.filter(isPicture);
+  const images = pictures.map((a) => a.data_url);
+  const photos = pictures.filter((a) => a.file_type === 'image').length;
+  const shared = pictures.filter((a) => a.file_type !== 'image');
+  const other = attachments.filter((a) => !isPicture(a)).map((a) => a.file_type);
   let text = (ev.content || '').trim();
-  if (images.length) text += `${text ? '\n' : ''}[customer sent ${images.length} photo(s)]`;
+  if (photos) text += `${text ? '\n' : ''}[customer sent ${photos} photo(s)]`;
+  for (const a of shared) {
+    const caption = await instagramCaption(a.data_url);
+    text +=
+      `${text ? '\n' : ''}[customer shared an Instagram ${a.file_type.replace(/^ig_/, '')} (its image is attached)` +
+      (caption ? `; post caption: "${caption.slice(0, 600)}"` : '; caption not available') +
+      ']';
+  }
   if (other.length) text += `${text ? '\n' : ''}[customer sent: ${other.join(', ')} — you cannot open these]`;
   if (!text) return;
 
   store.append(conversationId, 'user', text);
+  if (images.length) store.update(conversationId, { recentImages: { urls: images.slice(-3), at: Date.now() } });
 
   if (conv.status && conv.status !== 'pending') return log.info('skip: humans own it', { conversationId, status: conv.status });
   if (store.load(conversationId).mutedUntil > Date.now()) return log.info('skip: muted', { conversationId });
@@ -184,11 +218,13 @@ const server = http.createServer((req, res) => {
         return res.writeHead(401).end();
       }
       res.writeHead(200).end('ok'); // answer Chatwoot immediately
+      let ev;
       try {
-        handleEvent(JSON.parse(body));
+        ev = JSON.parse(body);
       } catch (err) {
-        log.warn('bad webhook', { err: String(err) });
+        return log.warn('bad webhook', { err: String(err) });
       }
+      handleEvent(ev).catch((err) => log.warn('event failed', { err: String(err) }));
     });
     return;
   }
