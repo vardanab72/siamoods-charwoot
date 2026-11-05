@@ -21,7 +21,7 @@ export const config = {
   chatwootAccountId: Number(process.env.CHATWOOT_ACCOUNT_ID || 2),
   chatwootBotToken: required('CHATWOOT_BOT_TOKEN'),
 
-  siteApiBaseUrl: (process.env.SITE_API_BASE_URL || 'https://admin.siamoods.com/api').replace(/\/$/, ''),
+  siteApiBaseUrl: (process.env.SITE_API_BASE_URL || 'https://api.siamoods.com/api').replace(/\/$/, ''),
   siteBaseUrl: (process.env.SITE_BASE_URL || 'https://siamoods.com').replace(/\/$/, ''),
 
   // Wait this long after the customer's last message before answering,

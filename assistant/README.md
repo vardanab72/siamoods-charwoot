@@ -25,7 +25,7 @@ and hands the conversation to a human when needed.
 | `ALLOWED_INBOX_IDS` | no | all inboxes the bot is attached to |
 | `CHATWOOT_BASE_URL` | no | `https://chat.siamoods.com` |
 | `CHATWOOT_ACCOUNT_ID` | no | `2` |
-| `SITE_API_BASE_URL` | no | `https://admin.siamoods.com/api` |
+| `SITE_API_BASE_URL` | no | `https://api.siamoods.com/api` |
 | `DEBOUNCE_MS` | no | `3500` |
 | `TEST_CONTACT_IDS` | no | test mode for Messenger/Instagram: only these Chatwoot contact IDs get AI replies; others go to humans |
 | `AUTOMATED_ECHO_PATTERNS` | no | `||`-separated regexes for automatic echo messages (n8n, Meta FAQ) that must not silence the bot |

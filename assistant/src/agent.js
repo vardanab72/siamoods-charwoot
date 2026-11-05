@@ -12,7 +12,16 @@ const ACTION_TOOLS = new Set(['add_labels', 'show_products', 'handoff_to_human']
 let systemPromptCache = { text: null, at: 0 };
 async function systemPrompt() {
   if (!systemPromptCache.text || Date.now() - systemPromptCache.at > 6 * 3600 * 1000) {
-    systemPromptCache = { text: buildSystemPrompt({ taxonomy: await taxonomyText() }), at: Date.now() };
+    let taxonomy;
+    try {
+      taxonomy = await taxonomyText();
+    } catch (err) {
+      // Catalog down: keep answering (delivery, stores...) with the last good prompt, or none.
+      log.warn('taxonomy unavailable', { err: String(err) });
+      if (systemPromptCache.text) return systemPromptCache.text;
+      return buildSystemPrompt({ taxonomy: '(catalog temporarily unavailable — product search may fail; answer other questions normally)' });
+    }
+    systemPromptCache = { text: buildSystemPrompt({ taxonomy }), at: Date.now() };
   }
   return systemPromptCache.text;
 }
