@@ -12,21 +12,27 @@ import { chatwoot } from './chatwoot.js';
 
 const SHARED_MEDIA = new Set(['ig_post', 'ig_reel', 'ig_story', 'story_mention', 'share']);
 
-// Caption of one of our Instagram posts, from its media id (asset_id in the CDN link).
+// Caption of one of our Instagram posts/reels shared in DM: looked up by media id (asset_id in
+// the CDN image link) or by the post/reel link (instagram.com/reel/<code>/).
 async function instagramCaption(dataUrl) {
-  if (!config.igCaptionUrl) return '';
+  if (!config.igCaptionUrl) return {};
   try {
-    const id = new URL(dataUrl).searchParams.get('asset_id');
-    if (!/^\d+$/.test(id || '')) return '';
-    const res = await fetch(`${config.igCaptionUrl}${config.igCaptionUrl.includes('?') ? '&' : '?'}id=${id}`, {
+    const u = new URL(dataUrl);
+    const id = u.searchParams.get('asset_id');
+    let query = '';
+    if (/^\d+$/.test(id || '')) query = `id=${id}`;
+    else if (/(^|\.)instagram\.com$/.test(u.hostname)) query = `url=${encodeURIComponent(u.origin + u.pathname)}`;
+    if (!query) return {};
+    const res = await fetch(`${config.igCaptionUrl}${config.igCaptionUrl.includes('?') ? '&' : '?'}${query}`, {
       signal: AbortSignal.timeout(8000),
     });
-    if (!res.ok) return '';
+    if (!res.ok) return {};
     const data = await res.json();
-    return String((Array.isArray(data) ? data[0] : data)?.caption || '').trim();
+    const d = (Array.isArray(data) ? data[0] : data) || {};
+    return { caption: String(d.caption || '').trim(), image: /^https:\/\//.test(d.image || '') ? d.image : '' };
   } catch (err) {
     log.warn('caption lookup failed', { err: String(err) });
-    return '';
+    return {};
   }
 }
 
@@ -154,21 +160,27 @@ async function handleEvent(ev) {
   }
 
   const attachments = ev.attachments || [];
-  // Photos, and Instagram posts/reels/stories shared in DM (they arrive with the post's image).
+  // Photos, and Instagram posts/reels/stories shared in DM (posts arrive with the post's image,
+  // reels only with their link).
   const isPicture = (a) =>
     a.data_url && (a.file_type === 'image' || (SHARED_MEDIA.has(a.file_type) && /^image\//.test(a.content_type || 'image/')));
   const pictures = attachments.filter(isPicture);
   const images = pictures.map((a) => a.data_url);
   const photos = pictures.filter((a) => a.file_type === 'image').length;
-  const shared = pictures.filter((a) => a.file_type !== 'image');
-  const other = attachments.filter((a) => !isPicture(a)).map((a) => a.file_type);
+  const shared = attachments.filter((a) => a.data_url && SHARED_MEDIA.has(a.file_type));
+  const other = attachments.filter((a) => !isPicture(a) && !shared.includes(a)).map((a) => a.file_type);
   let text = (ev.content || '').trim();
   if (photos) text += `${text ? '\n' : ''}[customer sent ${photos} photo(s)]`;
   for (const a of shared) {
-    const caption = await instagramCaption(a.data_url);
+    const kind = a.file_type.replace(/^ig_/, '');
+    const { caption, image } = await instagramCaption(a.data_url);
+    const hasImage = isPicture(a) || Boolean(image);
+    if (!isPicture(a) && image) images.push(image);
     text +=
-      `${text ? '\n' : ''}[customer shared an Instagram ${a.file_type.replace(/^ig_/, '')} (its image is attached)` +
-      (caption ? `; post caption: "${caption.slice(0, 600)}"` : '; caption not available') +
+      `${text ? '\n' : ''}[customer shared an Instagram ${kind}${hasImage ? ' (its image is attached)' : ''}` +
+      (caption
+        ? `; caption of that ${kind}: "${caption.slice(0, 600)}"`
+        : `; its caption could not be read${hasImage ? '' : ' and you cannot watch it'}`) +
       ']';
   }
   if (other.length) text += `${text ? '\n' : ''}[customer sent: ${other.join(', ')} — you cannot open these]`;

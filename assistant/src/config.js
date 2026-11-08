@@ -61,7 +61,7 @@ export const config = {
 
   // Optional: URL that returns { caption, permalink } for an Instagram media id (?id=...),
   // e.g. an n8n webhook using the shop's Instagram token. Used for posts customers share in DM.
-  igCaptionUrl: (process.env.IG_CAPTION_URL ?? 'https://n8n.siamoods.com/webhook/ig-post-caption-5c1e8a72d94b03f6').trim(),
+  igCaptionUrl: (process.env.IG_CAPTION_URL ?? 'https://n8n.siamoods.com/webhook/ig-post-caption-fa4ace249a0bce3f').trim(),
 
   dataDir: process.env.DATA_DIR || '/data',
   timezone: 'Asia/Yerevan',

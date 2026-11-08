@@ -219,6 +219,16 @@ test('shared Instagram post: caption is looked up and kept', async () => {
   assert.match(st.history.at(-1).text, /Instagram post .*SN286/);
   assert.ok(calls.some((c) => c.url.includes('ig-caption?id=17999756918938883')));
   assert.equal(st.recentImages.urls.length, 1);
+
+  await post(server, {
+    event: 'message_created', id: 5002, message_type: 'incoming', private: false, content: 'arjeqy?',
+    attachments: [{ file_type: 'ig_reel', content_type: 'text/html', data_url: 'https://www.instagram.com/reel/DfKb_nJMX_H/' }],
+    sender: { type: 'contact' }, conversation: { id: 99, status: 'open', channel: 'Channel::Instagram', inbox_id: 2 },
+    account: { id: 2 },
+  });
+  await wait(200);
+  assert.match(store.load(99).history.at(-1).text, /Instagram reel; caption of that reel: .*SN286/);
+  assert.ok(calls.some((c) => c.url.includes('ig-caption?url=https%3A%2F%2Fwww.instagram.com%2Freel%2FDfKb_nJMX_H%2F')));
 });
 
 test('exit', () => { setTimeout(() => process.exit(0), 50); });
