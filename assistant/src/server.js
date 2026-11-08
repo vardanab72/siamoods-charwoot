@@ -64,6 +64,9 @@ async function run(conversationId, entry) {
     const conv = await chatwoot.getConversation(conversationId).catch(() => null);
     if (conv && conv.status !== 'pending') return log.info('skip: not pending', { conversationId, status: conv.status });
     if (store.load(conversationId).mutedUntil > Date.now()) return log.info('skip: muted', { conversationId });
+    // Already answered (e.g. photo + text arrived while the previous reply was being written).
+    const st = store.load(conversationId);
+    if (st.lastReplyAt && (st.lastUserAt || 0) <= st.lastReplyAt) return log.info('skip: already answered', { conversationId });
 
     await chatwoot.typing(conversationId, true);
     const outcome = await respond({ conversationId, ...entry.meta, images: entry.images });
@@ -73,6 +76,8 @@ async function run(conversationId, entry) {
     if (store.load(conversationId).mutedUntil > Date.now()) return log.info('skip: human replied meanwhile', { conversationId });
 
     await deliver(conversationId, outcome);
+    // Messages that arrived after we started thinking still get their own answer.
+    store.update(conversationId, { lastReplyAt: started });
     log.info('replied', {
       conversationId,
       ms: Date.now() - started,

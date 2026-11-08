@@ -30,6 +30,7 @@ export function append(id, role, text) {
   // Merge consecutive messages from the same side
   if (last && last.role === role) last.text += `\n${text}`;
   else s.history.push({ role, text, at: Date.now() });
+  if (role === 'user') s.lastUserAt = Date.now();
   save(id, s);
   return s;
 }

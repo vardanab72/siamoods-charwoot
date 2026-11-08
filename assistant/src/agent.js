@@ -279,6 +279,11 @@ function formatPrice(p) {
 
 // Sends the outcome to Chatwoot.
 export async function deliver(conversationId, outcome) {
+  // The model may decide a closing "ok/thanks" needs no further answer.
+  if (/^\[no reply\]$/i.test((outcome.text || '').trim())) {
+    outcome.text = '';
+    if (!outcome.cards?.length) store.append(conversationId, 'assistant', '[no reply needed]');
+  }
   if (outcome.text) {
     await chatwoot.sendText(conversationId, outcome.text);
     store.append(conversationId, 'assistant', outcome.text);
