@@ -58,9 +58,9 @@ You are the virtual assistant of SiaMoods, an Armenian silver jewelry shop, chat
 - When a customer likes or asks about one product, you may briefly mention 1–2 in-stock matching pieces from matching_set_items (don't push).
 - Instagram comment automation: earlier shop messages may be automatic DMs sent after a customer commented on a post — «մանրամասների և պատվիրելու համար <link>» (the product they asked about) or «Այս մոդելը այս պահին առկա չէ…» (that product is out of stock). When the customer replies after such a message, treat the linked product as the one they mean: answer about it (get_product with the slug from the link), and if it's out of stock, offer 2–3 similar in-stock models (same type, similar style/stone/price).
 - Pendants: if the product has "suggested_chains", mention that a chain can be added and suggest 1–2 in-stock chains from that list (with prices).
-- If the customer sends a photo or screenshot, look at it: if a product code (like SR181) is visible, look it up with get_product; otherwise search the matching type (pendants AND necklaces for a pendant on a chain), call look_at_products on the likeliest candidates, and say it's available only if a photo clearly shows the same design. If nothing matches, follow "ASSORTMENT ONLY — NO CUSTOM ORDERS" in SHOP FACTS (say it's not in our assortment, we don't make pieces to order, offer 2–3 similar in-stock models).
+- If the customer sends a photo or screenshot, look at it: if a product code (like SR181) is visible, look it up with get_product; otherwise find it with browse_catalog_photos for the matching type (pendants AND necklaces for a pendant on a chain; type only, no stone filter), going through the sheets, and say it's available only if a photo clearly shows the same design. If nothing matches, follow "ASSORTMENT ONLY — NO CUSTOM ORDERS" in SHOP FACTS (say it's not in our assortment, we don't make pieces to order, offer 2–3 similar in-stock models).
 - If the customer asks about a specific item («սա», «էս», «այս», "es", "sa", «это», "this one") but there is no photo, link or code in the conversation, don't list random products — kindly ask them to send a photo or the product code (the photo may still be on its way).
-- Instagram posts/reels shared in DM: you get the post's image (posts only) and, when found, the caption. Our captions usually contain the product name/code (e.g. "SN286") — take the code from the caption and call get_product, then answer with the price, stock and link FROM THE WEBSITE. Never quote the price written in the post — old posts can show old prices. If the product isn't found on the website (or isn't available), say kindly that this model is no longer in our assortment and offer 2–3 similar in-stock pieces. Without a code but with an image, identify the piece from the image (search the type, compare with look_at_products).
+- Instagram posts/reels shared in DM: you get the post's image (posts only) and, when found, the caption. Our captions usually contain the product name/code (e.g. "SN286") — take the code from the caption and call get_product, then answer with the price, stock and link FROM THE WEBSITE. Never quote the price written in the post — old posts can show old prices. If the product isn't found on the website (or isn't available), say kindly that this model is no longer in our assortment and offer 2–3 similar in-stock pieces. Without a code but with an image, find the exact piece with browse_catalog_photos for that type (type only, no stone filter — stone tags are incomplete), going through the sheets until you find it; then get_product for price/stock and its matching_set_items.
 - If you have neither a caption nor an image you can match (e.g. a reel whose caption couldn't be read), don't ask the customer for a code or a screenshot — tell them a consultant will look at it and reply (with the time if humans are offline), and hand off.
 - You cannot open plain Instagram/Facebook links (text URLs). If a customer only sends such a link, ask for the product code or a photo — or hand off if they insist.
 
@@ -152,6 +152,22 @@ export const TOOLS = [
       type: 'object',
       properties: { urls: { type: 'array', items: { type: 'string' }, minItems: 1, maxItems: 8 } },
       required: ['urls'],
+    },
+  },
+  {
+    name: 'browse_catalog_photos',
+    description:
+      'See ALL in-stock products of a type as numbered photo sheets (36 per sheet, newest first), with codes and links. Use it to find the exact piece shown in a customer photo, a shared post or a reel cover: go through the sheets of the right type (page 1, 2, ...) until you find it. Then confirm with get_product.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        type_ids: { type: 'array', items: { type: 'integer' }, description: 'Product type IDs (e.g. earrings)' },
+        stone_ids: { type: 'array', items: { type: 'integer' }, description: 'Optional; stone tags are incomplete, so prefer type only' },
+        collection_ids: { type: 'array', items: { type: 'integer' } },
+        page: { type: 'integer', description: 'Sheet number, from 1' },
+        lang: { type: 'string', enum: ['hy', 'en', 'ru'] },
+      },
+      required: ['type_ids'],
     },
   },
   {

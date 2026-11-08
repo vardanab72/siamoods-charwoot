@@ -125,6 +125,29 @@ export async function searchProducts(input) {
   return { total_found: data.meta?.total ?? (data.data || []).length, products };
 }
 
+// Every in-stock product of a type (newest first), for scanning photos. Cached 30 min.
+const listCache = new Map();
+export async function listAllProducts(input) {
+  const lang = normLang(input.lang);
+  const params = { lang, type: input.type_ids, stone: input.stone_ids, filter: input.collection_ids, balance: 1, sort_by: SORTS.newest };
+  const key = JSON.stringify(params);
+  const hit = listCache.get(key);
+  if (hit && Date.now() - hit.at < 30 * 60 * 1000) return hit.products;
+  const first = await getJson('/products', { ...params, page: 1 });
+  const last = Math.min(Number(first.meta?.last_page) || 1, 40);
+  const rest = await Promise.all(
+    Array.from({ length: last - 1 }, (_, i) => getJson('/products', { ...params, page: i + 2 }).catch(() => ({ data: [] }))),
+  );
+  const seen = new Set();
+  const products = [first, ...rest]
+    .flatMap((d) => d.data || [])
+    .map((p) => shortProduct(p, lang))
+    .filter((p) => p.slug && !seen.has(p.slug) && seen.add(p.slug));
+  listCache.set(key, { at: Date.now(), products });
+  if (listCache.size > 50) listCache.delete(listCache.keys().next().value);
+  return products;
+}
+
 async function fetchProductDetail(slug, lang) {
   const key = `${lang}:${slug}`;
   const hit = productCache.get(key);

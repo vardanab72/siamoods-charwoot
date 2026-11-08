@@ -2,7 +2,7 @@ FROM node:22-alpine
 ENV NODE_ENV=production
 WORKDIR /app
 COPY package.json package-lock.json ./
-RUN npm ci --omit=dev && npm cache clean --force
+RUN apk add --no-cache ttf-dejavu fontconfig && npm ci --omit=dev && npm cache clean --force
 COPY src ./src
 RUN mkdir -p /data && chown node:node /data
 USER node

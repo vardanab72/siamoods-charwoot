@@ -15,7 +15,7 @@ export const config = {
   anthropicApiKey: required('ANTHROPIC_API_KEY'),
   model: process.env.ANTHROPIC_MODEL || 'claude-sonnet-5-5',
   maxTokens: Number(process.env.MAX_TOKENS || 1200),
-  maxToolRounds: Number(process.env.MAX_TOOL_ROUNDS || 6),
+  maxToolRounds: Number(process.env.MAX_TOOL_ROUNDS || 9),
 
   chatwootBaseUrl: (process.env.CHATWOOT_BASE_URL || 'https://chat.siamoods.com').replace(/\/$/, ''),
   chatwootAccountId: Number(process.env.CHATWOOT_ACCOUNT_ID || 2),

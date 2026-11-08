@@ -1,7 +1,8 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { config } from './config.js';
 import { buildSystemPrompt, TOOLS, ALLOWED_LABELS } from './prompt.js';
-import { searchProducts, getProduct, getMatchingSets, taxonomyText } from './catalog.js';
+import { searchProducts, getProduct, getMatchingSets, taxonomyText, listAllProducts } from './catalog.js';
+import { buildSheet, PER_SHEET } from './contactsheet.js';
 import { chatwoot } from './chatwoot.js';
 import * as store from './store.js';
 import { log } from './log.js';
@@ -262,6 +263,25 @@ async function runTool(tu, { seenProducts, outcome, isWebsite }) {
       });
       content.push({ type: 'text', text: 'Judge each photo honestly. Offer only products whose photo clearly shows what the customer asked for.' });
       return { __content: content };
+    }
+    case 'browse_catalog_photos': {
+      const all = await listAllProducts(input);
+      const pages = Math.max(1, Math.ceil(all.length / PER_SHEET));
+      const page = Math.min(Math.max(Number(input.page) || 1, 1), pages);
+      const items = all.slice((page - 1) * PER_SHEET, page * PER_SHEET);
+      if (!items.length) return { total_in_stock: 0, note: 'Nothing in stock for these filters.' };
+      items.forEach((p) => seenProducts.set(p.url, p));
+      const sheet = await buildSheet(items);
+      const list = items
+        .map((p, i) => `${i + 1}. ${p.code} — ${p.discount_price_amd || p.price_amd} AMD — ${p.url}`)
+        .join('\n');
+      return {
+        __content: [
+          { type: 'text', text: `Sheet ${page} of ${pages} (${all.length} in-stock products, newest first). Tiles are numbered:` },
+          { type: 'image', source: { type: 'base64', media_type: 'image/jpeg', data: sheet.toString('base64') } },
+          { type: 'text', text: `${list}\n\nCompare carefully with the customer's picture. If no tile matches and page < ${pages}, look at the next sheet. Confirm a likely match with get_product / look_at_products.` },
+        ],
+      };
     }
     case 'show_products': {
       if (!isWebsite) return { ok: false, note: 'Not the website chat — put links in your text instead.' };
