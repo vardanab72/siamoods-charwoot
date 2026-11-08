@@ -231,4 +231,17 @@ test('shared Instagram post: caption is looked up and kept', async () => {
   assert.ok(calls.some((c) => c.url.includes('ig-caption?url=https%3A%2F%2Fwww.instagram.com%2Freel%2FDfKb_nJMX_H%2F')));
 });
 
+test('questions from an earlier day are background only', async () => {
+  const { toAnthropicMessages } = await import('../src/agent.js');
+  const day = 24 * 3600 * 1000;
+  const now = Date.now();
+  const m = toAnthropicMessages([
+    { role: 'user', text: 'azat hastiq uneq?', at: now - 7 * day },
+    { role: 'assistant', text: 'handed off', at: now - 7 * day },
+    { role: 'user', text: 'gin@ kaseq?', at: now },
+  ]);
+  assert.equal(m.length, 1);
+  assert.match(m[0].content, /do NOT answer those questions again[\s\S]*azat hastiq[\s\S]*\]\n\ngin@ kaseq\?$/);
+});
+
 test('exit', () => { setTimeout(() => process.exit(0), 50); });

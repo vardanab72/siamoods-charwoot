@@ -27,8 +27,11 @@ export function save(id, state) {
 export function append(id, role, text) {
   const s = load(id);
   const last = s.history[s.history.length - 1];
-  // Merge consecutive messages from the same side
-  if (last && last.role === role) last.text += `\n${text}`;
+  // Merge consecutive messages from the same side (but not across a long pause)
+  if (last && last.role === role && Date.now() - (last.lastAt || last.at || 0) < 3600 * 1000) {
+    last.text += `\n${text}`;
+    last.lastAt = Date.now();
+  }
   else s.history.push({ role, text, at: Date.now() });
   if (role === 'user') s.lastUserAt = Date.now();
   save(id, s);

@@ -66,7 +66,22 @@ function contextBlock({ channel, customerName, introduced }) {
     .join('\n');
 }
 
+const SESSION_GAP_MS = 6 * 3600 * 1000;
+
 export function toAnthropicMessages(history, images) {
+  // Messages from an earlier visit (6h+ before the customer's latest message) were already
+  // handled by the shop: give them as background only, so they aren't answered again.
+  const lastUserAt = Math.max(0, ...history.filter((h) => h.role === 'user').map((h) => h.lastAt || h.at || 0));
+  const cut = history.findIndex((h) => (h.lastAt || h.at || 0) >= lastUserAt - SESSION_GAP_MS);
+  let earlier = '';
+  if (cut > 0) {
+    earlier = history
+      .slice(0, cut)
+      .map((h) => `${h.role === 'user' ? 'Customer' : 'Shop'}: ${h.text}`)
+      .join('\n')
+      .slice(-3000);
+    history = history.slice(cut);
+  }
   const msgs = [];
   for (const h of history) {
     if (!msgs.length && h.role !== 'user') continue; // must start with the customer
@@ -81,6 +96,10 @@ export function toAnthropicMessages(history, images) {
     msgs[msgs.length - 1].content += `\n[automatic shop message shown after this: ${tail.content}]`;
   }
   if (msgs.length && msgs[msgs.length - 1].role !== 'user') return [];
+  if (earlier && msgs.length) {
+    msgs[0].content =
+      `[Earlier conversation from a previous day — already handled by the shop; do NOT answer those questions again, use only as background:\n${earlier}]\n\n${msgs[0].content}`;
+  }
   if (images?.length && msgs.length && msgs[msgs.length - 1].role === 'user') {
     const last = msgs[msgs.length - 1];
     last.content = [
