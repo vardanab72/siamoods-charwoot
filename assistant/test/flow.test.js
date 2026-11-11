@@ -244,4 +244,20 @@ test('questions from an earlier day are background only', async () => {
   assert.match(m[0].content, /do NOT answer those questions again[\s\S]*azat hastiq[\s\S]*\]\n\ngin@ kaseq\?$/);
 });
 
+test('story mention gets no AI reply', async () => {
+  const servers = process._getActiveHandles().filter((h) => h.constructor?.name === 'Server');
+  const server = servers.find((s) => s.address && s.address());
+  const before = claudeRound;
+  await post(server, {
+    event: 'message_created', id: 6001, message_type: 'incoming', private: false, content: null,
+    attachments: [{ file_type: 'story_mention', content_type: 'image/jpeg', data_url: 'https://lookaside.fbsbx.com/ig_messaging_cdn/?asset_id=1&signature=x' }],
+    content_attributes: { image_type: 'story_mention' },
+    sender: { type: 'contact' }, conversation: { id: 101, status: 'pending', channel: 'Channel::Instagram', inbox_id: 2 },
+    account: { id: 2 },
+  });
+  await wait(300);
+  assert.equal(claudeRound, before);
+  assert.match(store.load(101).history.at(-1).text, /tagged @siamoods/);
+});
+
 test('exit', () => { setTimeout(() => process.exit(0), 50); });

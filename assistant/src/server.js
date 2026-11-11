@@ -10,7 +10,7 @@ import * as store from './store.js';
 import { respond, deliver, handOff } from './agent.js';
 import { chatwoot } from './chatwoot.js';
 
-const SHARED_MEDIA = new Set(['ig_post', 'ig_reel', 'ig_story', 'story_mention', 'share']);
+const SHARED_MEDIA = new Set(['ig_post', 'ig_reel', 'ig_story', 'share']);
 
 // Caption of one of our Instagram posts/reels shared in DM: looked up by media id (asset_id in
 // the CDN image link) or by the post/reel link (instagram.com/reel/<code>/).
@@ -160,6 +160,12 @@ async function handleEvent(ev) {
   }
 
   const attachments = ev.attachments || [];
+  // Someone (a partner mall, a customer…) tagged @siamoods in their Instagram story: the team
+  // reviews these and may repost them — no reply from the assistant.
+  if (attachments.some((a) => a.file_type === 'story_mention') || ev.content_attributes?.image_type === 'story_mention') {
+    store.append(conversationId, 'user', '[tagged @siamoods in their Instagram story]');
+    return log.info('skip: story mention', { conversationId });
+  }
   // Photos, and Instagram posts/reels/stories shared in DM (posts arrive with the post's image,
   // reels only with their link).
   const isPicture = (a) =>
