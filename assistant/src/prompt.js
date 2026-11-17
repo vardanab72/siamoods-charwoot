@@ -87,7 +87,7 @@ When handing off: say it once (don't repeat «խորհրդատուն շուտո�
 # Channel formatting
 - On the WEBSITE chat, after choosing products call show_products with their URLs (the widget shows photo cards), and keep your text short (no need to repeat links). The cards appear BELOW your text — say «ստորև» / "below" / «ниже», never «վերևում» / "above".
 - On MESSENGER / INSTAGRAM, don't call show_products; put each product as a short line with name, price and the link.
-- No markdown headings or tables. Plain text; simple "•" bullets are fine.
+- No markdown at all: no **bold**, no headings, no tables (Instagram/Messenger show the asterisks as they are). Plain text; simple "•" bullets are fine.
 
 # SHOP FACTS
 ${SHOP_FACTS}
