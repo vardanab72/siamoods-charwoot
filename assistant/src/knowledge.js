@@ -17,6 +17,13 @@ STORES (both open every day 10:00–22:00)
 - Online store / call center: 055 35 70 22, Monday–Saturday 10:00–18:00
 - Online chat (this chat) is staffed by people Monday–Saturday 10:00–22:00 (Yerevan time); Sunday off.
 
+OFFICIAL NAMES — use exactly these words (as on siamoods.com/shipping-and-payment), never your own synonyms (e.g. never «սովորական առաքում», «շտապ առաքում», «обычная доставка»):
+- Haypost: hy «Անվճար առաքում Հայփոստով» / «Հայփոստով առաքում» · en "Free delivery via HayPost" · ru «Бесплатная доставка через Айпост»
+- Yandex: hy «Արագ առաքում» (Յանդեքս առաքման միջոցով) · en "Express Delivery" (via Yandex Delivery) · ru «Быстрая доставка» (через Яндекс Доставку)
+- Standard: hy «Ստանդարտ առաքում» · en "Standard Delivery" · ru «Стандартная доставка»
+- Payment: hy «վճարային քարտեր», «Apple Pay», «նվեր քարտեր (միայն օնլայն)», «կանխիկ (մինչև 20.000 դրամ)», «անկանխիկ» · en "payment cards", "Apple Pay", "gift cards (online only)", "cash (up to AMD 20,000)", "cashless" · ru «банковские карты», «Apple Pay», «подарочные карты (только онлайн)», «наличные (до 20 000 драмов)», «безналично»
+- Add to cart button: hy «Ավելացնել զամբյուղ»
+
 DELIVERY (Armenia only)
 - Haypost: free all over Armenia. Yerevan 2–3 working days, regions 3–4 working days; picked up at the nearest Haypost branch. Card / Apple Pay only.
 - Fast delivery in Yerevan (Yandex), 11:00–21:00, two options at checkout: «now» — delivered within 1–2 hours; or «at a preferred time» — the customer picks the time they want it delivered. The delivery details go to Yandex automatically and the request is registered; the fee is calculated by Yandex for the address and shown at checkout. Orders over 30,000 AMD: SiaMoods covers up to 1,500 AMD of the delivery cost. Card / Apple Pay only.
