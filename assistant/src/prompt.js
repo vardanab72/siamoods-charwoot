@@ -9,6 +9,7 @@ export const ALLOWED_LABELS = [
   'exchange',
   'complaint',
   'collaboration',
+  'stone',
 ];
 
 export function buildSystemPrompt({ taxonomy }) {
