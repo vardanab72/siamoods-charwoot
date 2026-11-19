@@ -26,7 +26,7 @@ and hands the conversation to a human when needed.
 | `CHATWOOT_BASE_URL` | no | `https://chat.siamoods.com` |
 | `CHATWOOT_ACCOUNT_ID` | no | `2` |
 | `SITE_API_BASE_URL` | no | `https://api.siamoods.com/api` |
-| `DEBOUNCE_MS` | no | `3500` |
+| `DEBOUNCE_MS` | no | `7000` (wait for photo + text sent one after another) |
 | `TEST_CONTACT_IDS` | no | test mode for Messenger/Instagram: only these Chatwoot contact IDs get AI replies; others go to humans |
 | `IG_CAPTION_URL` | no | n8n webhook "SiaMoods - Instagram post caption v4" — returns the caption of a post a customer shares in DM (set empty to disable) |
 | `AUTOMATED_ECHO_PATTERNS` | no | `||`-separated regexes for automatic echo messages (n8n, Meta FAQ) that must not silence the bot |

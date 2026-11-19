@@ -26,7 +26,7 @@ export const config = {
 
   // Wait this long after the customer's last message before answering,
   // so several quick messages are answered together.
-  debounceMs: Number(process.env.DEBOUNCE_MS || 3500),
+  debounceMs: Number(process.env.DEBOUNCE_MS || 7000),
 
   // Only these inbox IDs are answered (comma separated). Empty = every inbox the bot is attached to.
   allowedInboxIds: (process.env.ALLOWED_INBOX_IDS || '')
