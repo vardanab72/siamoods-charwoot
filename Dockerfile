@@ -33,6 +33,11 @@ RUN sed -i "s#\(iso_639_1_code: 'sl', enabled: true }\)#\1,\n  44 => { name: 'Հ
   && grep -q "iso_639_1_code: 'hy'" config/initializers/languages.rb \
   && ruby -c config/initializers/languages.rb
 
+# Campaign / unread bubble: when the bot speaks as the inbox ("SiaMoods"), don't repeat
+# "from SiaMoods" next to it
+RUN sed -i 's#<span class="company--name">{{ companyName }}</span>#<span v-if="agentName !== channelConfig.websiteName" class="company--name">{{ companyName }}</span>#' app/javascript/widget/components/UnreadMessage.vue \
+  && grep -q 'v-if="agentName !== channelConfig.websiteName"' app/javascript/widget/components/UnreadMessage.vue
+
 RUN rm -rf public/vite public/packs \
   && pnpm i --frozen-lockfile \
   && SECRET_KEY_BASE=precompile_placeholder RAILS_LOG_TO_STDOUT=enabled bundle exec rake assets:precompile \
