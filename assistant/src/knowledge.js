@@ -21,7 +21,7 @@ OFFICIAL NAMES — use exactly these words (as on siamoods.com/shipping-and-paym
 - Haypost: hy «Անվճար առաքում Հայփոստով» / «Հայփոստով առաքում» · en "Free delivery via HayPost" · ru «Бесплатная доставка через Айпост»
 - Yandex: hy «Արագ առաքում» (Յանդեքս առաքման միջոցով) · en "Express Delivery" (via Yandex Delivery) · ru «Быстрая доставка» (через Яндекс Доставку)
 - Standard: hy «Ստանդարտ առաքում» · en "Standard Delivery" · ru «Стандартная доставка»
-- Payment: hy «վճարային քարտեր», «Apple Pay», «նվեր քարտեր (միայն օնլայն)», «կանխիկ (մինչև 20.000 դրամ)», «անկանխիկ» · en "payment cards", "Apple Pay", "gift cards (online only)", "cash (up to AMD 20,000)", "cashless" · ru «банковские карты», «Apple Pay», «подарочные карты (только онлайн)», «наличные (до 20 000 драмов)», «безналично»
+- Payment: hy «վճարային քարտեր», «Apple Pay», «նվեր քարտեր», «կանխիկ (մինչև 20.000 դրամ)», «անկանխիկ» · en "payment cards", "Apple Pay", "gift cards", "cash (up to AMD 20,000)", "cashless" · ru «банковские карты», «Apple Pay», «подарочные карты», «наличные (до 20 000 драмов)», «безналично»
 - Add to cart button: hy «Ավելացնել զամբյուղ»
 
 DELIVERY (Armenia only)
@@ -33,7 +33,12 @@ DELIVERY (Armenia only)
 - Many customers abroad order as gifts for family/friends in Armenia — that works, delivery address must be in Armenia.
 
 PAYMENT
-- Bank card, Apple Pay, SiaMoods gift card (online). Cash only for orders up to 20,000 AMD with standard delivery in Yerevan.
+- Bank card, Apple Pay, SiaMoods gift card (see GIFT CARDS). Cash only for orders up to 20,000 AMD with standard delivery in Yerevan.
+
+GIFT CARDS — two types, don't mix them up
+- Digital gift card (թվային / էլեկտրոնային նվեր քարտ): bought ONLY on the website and used ONLY on the website (online orders).
+- Plastic gift card (պլաստիկ նվեր քարտ): can be bought on the website or in our stores (Megamall, Yerevan Mall), but can be used ONLY in our stores — not on the website.
+- If the customer doesn't say which type they have, ask (digital or plastic) before saying where it can be used. Never say a plastic card works online or a digital card works in stores.
 
 EXCHANGE & RETURNS
 - Exchange within 14 days of purchase: unused, with original tags and packaging and the fiscal receipt (ՀԴՄ կտրոն).
