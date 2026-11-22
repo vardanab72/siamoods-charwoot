@@ -1,7 +1,7 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { config } from './config.js';
 import { buildSystemPrompt, TOOLS, ALLOWED_LABELS } from './prompt.js';
-import { searchProducts, getProduct, getMatchingSets, taxonomyText, listAllProducts, storeLink } from './catalog.js';
+import { searchProducts, getProduct, getMatchingSets, taxonomyText, listAllProducts, storeLink, storeStock } from './catalog.js';
 import { buildSheet, PER_SHEET } from './contactsheet.js';
 import { chatwoot } from './chatwoot.js';
 import * as store from './store.js';
@@ -264,6 +264,8 @@ async function runTool(tu, { seenProducts, outcome, isWebsite }) {
       content.push({ type: 'text', text: 'Judge each photo honestly. Offer only products whose photo clearly shows what the customer asked for.' });
       return { __content: content };
     }
+    case 'store_stock':
+      return storeStock(input);
     case 'store_filter_link':
       return storeLink(input);
     case 'browse_catalog_photos': {

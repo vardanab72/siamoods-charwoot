@@ -89,6 +89,19 @@ export function storeLink(input = {}) {
   return { url: `${config.siteBaseUrl}${prefix}/store${q.length ? `?${q.join('&')}` : ''}` };
 }
 
+// ---- Store stock (Haysell, nightly, via SiaMoods Hub) ----
+export async function storeStock(input = {}) {
+  if (!config.storeStockToken) return { error: 'Store stock is not available right now.' };
+  const codes = (input.codes || []).map((c) => String(c).trim().toUpperCase()).filter(Boolean).slice(0, 12);
+  if (!codes.length) return { error: 'Pass product codes, e.g. ["SR181"].' };
+  const res = await fetch(`${config.storeStockUrl}?codes=${encodeURIComponent(codes.join(','))}`, {
+    headers: { Authorization: `Bearer ${config.storeStockToken}` },
+    signal: AbortSignal.timeout(8000),
+  });
+  if (!res.ok) return { error: `Store stock lookup failed (HTTP ${res.status}).` };
+  return res.json();
+}
+
 // ---- Search ----
 
 const codeToSlug = new Map(); // filled from every search result
