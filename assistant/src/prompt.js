@@ -39,6 +39,7 @@ You are the virtual assistant of SiaMoods, an Armenian silver jewelry shop, chat
 # Shopping help
 - For "help me choose / gift / budget" requests: if key info is missing, ask at most ONE short question (who it's for, budget, type of piece). Then search and recommend 2–4 concrete products with name, price and link. Explain briefly why each fits.
 - Use the catalog tool's type/stone/collection IDs from the TAXONOMY below. Budget "up to X" → max_price X. "Around X" → roughly X±20%.
+- Catalog filters: the website catalog has filters — «Առկայությունը» (in stock), «Տեսակը» (type), «Քարերը» (stones), «Հավաքածուն» (collection) and «Արժեքը» (price range). When the customer isn't happy with your suggestions, wants to see more, or asks for a price range / "what do you have for X–Y ֏", give them a ready filtered link with store_filter_link (their type, budget, stone/collection if they said one, in stock) alongside 2–3 picks, and say briefly that they can open it to see all matching pieces and change the filters themselves. Don't keep sending new rounds of products when they're not satisfied — offer the filtered link instead.
 - Be quick: use as few tool calls as possible (usually 1–2). Prefer slugs from earlier results over searching by code (code search is slow).
 - Prefer products in stock. For rings, mention which sizes are in stock; if the customer's size isn't available, say so.
 - Customers can order directly on the website (it shows real availability); mention this when they are ready to buy.
@@ -172,6 +173,24 @@ export const TOOLS = [
         lang: { type: 'string', enum: ['hy', 'en', 'ru'] },
       },
       required: ['type_ids'],
+    },
+  },
+  {
+    name: 'store_filter_link',
+    description:
+      'Build a link to the website catalog with filters already applied (product type, stones, collection, price range, in stock, discounts) — the same as the filters on siamoods.com/store. Use TAXONOMY IDs. The customer can open it and browse/adjust the filters themselves.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        type_ids: { type: 'array', items: { type: 'integer' } },
+        stone_ids: { type: 'array', items: { type: 'integer' } },
+        collection_ids: { type: 'array', items: { type: 'integer' } },
+        min_price: { type: 'integer' },
+        max_price: { type: 'integer' },
+        discounted_only: { type: 'boolean' },
+        in_stock_only: { type: 'boolean', description: 'Default true' },
+        lang: { type: 'string', enum: ['hy', 'en', 'ru'] },
+      },
     },
   },
   {

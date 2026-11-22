@@ -70,6 +70,25 @@ export async function taxonomyText() {
   ].join('\n');
 }
 
+// ---- Filtered catalog link (same URL the website's own filters produce) ----
+// e.g. https://siamoods.com/store?type=27453,27454&stone=27473&filter=26810&min_price=4900&max_price=16700&balance=1
+export function storeLink(input = {}) {
+  const l = LANGS.includes(input.lang) ? input.lang : 'hy';
+  const prefix = l === 'hy' ? '' : `/${l}`;
+  const ids = (a) => (Array.isArray(a) ? a.map(Number).filter(Number.isInteger) : []);
+  const q = [];
+  if (ids(input.type_ids).length) q.push(`type=${ids(input.type_ids).join('%2C')}`);
+  if (ids(input.stone_ids).length) q.push(`stone=${ids(input.stone_ids).join('%2C')}`);
+  if (ids(input.collection_ids).length) q.push(`filter=${ids(input.collection_ids).join('%2C')}`);
+  if (input.min_price != null || input.max_price != null) {
+    q.push(`min_price=${Math.max(0, Number(input.min_price) || 0)}`);
+    q.push(`max_price=${Number(input.max_price) || 10_000_000}`);
+  }
+  if (input.discounted_only) q.push('discount=1');
+  if (input.in_stock_only !== false) q.push('balance=1');
+  return { url: `${config.siteBaseUrl}${prefix}/store${q.length ? `?${q.join('&')}` : ''}` };
+}
+
 // ---- Search ----
 
 const codeToSlug = new Map(); // filled from every search result
