@@ -229,6 +229,17 @@ test('shared Instagram post: caption is looked up and kept', async () => {
   await wait(200);
   assert.match(store.load(99).history.at(-1).text, /Instagram reel; caption of that reel: .*SN286/);
   assert.ok(calls.some((c) => c.url.includes('ig-caption?url=https%3A%2F%2Fwww.instagram.com%2Freel%2FDfKb_nJMX_H%2F')));
+
+  // Messenger: a shared post of our Facebook page arrives as a "fallback" link
+  await post(server, {
+    event: 'message_created', id: 5003, message_type: 'incoming', private: false, content: null,
+    attachments: [{ file_type: 'fallback', fallback_title: 'SiaMoods added a new photo.', data_url: 'https://www.facebook.com/photo.php?fbid=1399792989013636&set=a.544347161224894&type=3' }],
+    sender: { type: 'contact' }, conversation: { id: 98, status: 'open', channel: 'Channel::FacebookPage', inbox_id: 1 },
+    account: { id: 2 },
+  });
+  await wait(200);
+  assert.match(store.load(98).history.at(-1).text, /shared a Facebook post of ours .*SN286/);
+  assert.ok(calls.some((c) => c.url.includes('ig-caption?fbid=1399792989013636')));
 });
 
 test('questions from an earlier day are background only', async () => {

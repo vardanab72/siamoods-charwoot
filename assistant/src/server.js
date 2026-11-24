@@ -20,7 +20,9 @@ async function instagramCaption(dataUrl) {
     const u = new URL(dataUrl);
     const id = u.searchParams.get('asset_id');
     let query = '';
-    if (/^\d+$/.test(id || '')) query = `id=${id}`;
+    const fbid = /(^|\.)facebook\.com$/.test(u.hostname) ? u.searchParams.get('fbid') : null;
+    if (/^\d+$/.test(fbid || '')) query = `fbid=${fbid}`;
+    else if (/^\d+$/.test(id || '')) query = `id=${id}`;
     else if (/(^|\.)instagram\.com$/.test(u.hostname)) query = `url=${encodeURIComponent(u.origin + u.pathname)}`;
     if (!query) return {};
     const res = await fetch(`${config.igCaptionUrl}${config.igCaptionUrl.includes('?') ? '&' : '?'}${query}`, {
@@ -78,6 +80,10 @@ async function run(conversationId, entry) {
     const outcome = await respond({ conversationId, ...entry.meta, images: entry.images });
     await chatwoot.typing(conversationId, false);
 
+    // The customer wrote again while we were thinking: drop this draft, the next run answers all of it.
+    if ((store.load(conversationId).lastUserAt || 0) > started && timers.has(conversationId)) {
+      return log.info('draft dropped: customer wrote meanwhile', { conversationId });
+    }
     // Don't post if a consultant replied while we were thinking
     if (store.load(conversationId).mutedUntil > Date.now()) return log.info('skip: human replied meanwhile', { conversationId });
 
@@ -173,17 +179,20 @@ async function handleEvent(ev) {
   const pictures = attachments.filter(isPicture);
   const images = pictures.map((a) => a.data_url);
   const photos = pictures.filter((a) => a.file_type === 'image').length;
-  const shared = attachments.filter((a) => a.data_url && SHARED_MEDIA.has(a.file_type));
+  const isFbPost = (a) => a.file_type === 'fallback' && /^https:\/\/(www\.|m\.)?facebook\.com\//.test(a.data_url || '');
+  const shared = attachments.filter((a) => a.data_url && (SHARED_MEDIA.has(a.file_type) || isFbPost(a)));
   const other = attachments.filter((a) => !isPicture(a) && !shared.includes(a)).map((a) => a.file_type);
   let text = (ev.content || '').trim();
   if (photos) text += `${text ? '\n' : ''}[customer sent ${photos} photo(s)]`;
   for (const a of shared) {
-    const kind = a.file_type.replace(/^ig_/, '');
+    const kind = isFbPost(a)
+      ? `Facebook post${/siamoods/i.test(a.fallback_title || '') ? ' of ours (SiaMoods page)' : ''}`
+      : a.file_type.replace(/^ig_/, '');
     const { caption, image } = await instagramCaption(a.data_url);
     const hasImage = isPicture(a) || Boolean(image);
     if (!isPicture(a) && image) images.push(image);
     text +=
-      `${text ? '\n' : ''}[customer shared an Instagram ${kind}${hasImage ? ' (its image is attached)' : ''}` +
+      `${text ? '\n' : ''}[customer shared ${isFbPost(a) ? 'a' : 'an Instagram'} ${kind}${hasImage ? ' (its image is attached)' : ''}` +
       (caption
         ? `; caption of that ${kind}: "${caption.slice(0, 600)}"`
         : `; its caption could not be read${hasImage ? '' : ' and you cannot watch it'}`) +
