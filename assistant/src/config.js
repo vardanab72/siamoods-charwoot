@@ -63,7 +63,7 @@ export const config = {
   // e.g. an n8n webhook using the shop's Instagram token. Used for posts customers share in DM.
   storeStockUrl: (process.env.STORE_STOCK_URL ?? 'https://hub.siamoods.com/api/public/store-stock').trim(),
   storeStockToken: (process.env.STOCK_API_TOKEN || '').trim(),
-  igCaptionUrl: (process.env.IG_CAPTION_URL ?? 'https://n8n.siamoods.com/webhook/ig-post-caption-a7c37aec3dceb801').trim(),
+  igCaptionUrl: (process.env.IG_CAPTION_URL ?? 'https://n8n.siamoods.com/webhook/ig-post-caption-v5-a7c37aec3dceb801').trim(),
 
   dataDir: process.env.DATA_DIR || '/data',
   timezone: 'Asia/Yerevan',
