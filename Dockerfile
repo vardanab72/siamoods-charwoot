@@ -50,3 +50,14 @@ COPY --from=builder /app/public/vite /app/public/vite
 COPY --from=builder /app/public/packs /app/public/packs
 COPY --from=builder /app/config/initializers/languages.rb /app/config/initializers/languages.rb
 COPY --from=builder /app/app/javascript/widget/i18n /app/app/javascript/widget/i18n
+
+WORKDIR /app
+
+# Facebook Messenger: a reply to the page's story arrives with message.reply_to.story {url, id},
+# which upstream drops. Keep it as content_attributes story_url / story_id (the AI assistant reads it).
+RUN sed -i 's#^  def in_reply_to_external_id#  def story_reply\n    @messaging.dig("message", "reply_to", "story")\n  end\n\n&#' lib/integrations/facebook/message_parser.rb \
+  && sed -i 's#^    content_attributes\[:external_echo\] = true if @outgoing_echo#&\n    if (story = response.story_reply).present?\n      content_attributes[:story_url] = story["url"]\n      content_attributes[:story_id] = story["id"]\n    end#' app/builders/messages/facebook/message_builder.rb \
+  && grep -q "def story_reply" lib/integrations/facebook/message_parser.rb \
+  && grep -q "content_attributes\[:story_url\]" app/builders/messages/facebook/message_builder.rb \
+  && ruby -c lib/integrations/facebook/message_parser.rb \
+  && ruby -c app/builders/messages/facebook/message_builder.rb

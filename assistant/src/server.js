@@ -182,7 +182,11 @@ async function handleEvent(ev) {
   const isFbPost = (a) => a.file_type === 'fallback' && /^https:\/\/(www\.|m\.)?facebook\.com\//.test(a.data_url || '');
   const shared = attachments.filter((a) => a.data_url && (SHARED_MEDIA.has(a.file_type) || isFbPost(a)));
   const other = attachments.filter((a) => !isPicture(a) && !shared.includes(a)).map((a) => a.file_type);
+  // Reply to our Facebook story (Messenger): the patched Chatwoot passes the story's media link.
+  const storyUrl = /^https:\/\//.test(ev.content_attributes?.story_url || '') ? ev.content_attributes.story_url : '';
+  if (storyUrl) images.push(storyUrl);
   let text = (ev.content || '').trim();
+  if (storyUrl) text = `[customer replied to our Facebook story — the story's picture is attached if it is a photo; if no picture comes with this message it was a video you cannot watch]${text ? '\n' + text : ''}`;
   if (photos) text += `${text ? '\n' : ''}[customer sent ${photos} photo(s)]`;
   for (const a of shared) {
     const kind = isFbPost(a)
@@ -207,7 +211,7 @@ async function handleEvent(ev) {
   if (conv.status && conv.status !== 'pending') return log.info('skip: humans own it', { conversationId, status: conv.status });
   if (store.load(conversationId).mutedUntil > Date.now()) return log.info('skip: muted', { conversationId });
   // A lone «։», "." or emoji/reaction needs no answer (it stays in history as context).
-  if (!attachments.length && !/[\p{L}\p{N}]/u.test(text)) return log.info('skip: no words', { conversationId });
+  if (!attachments.length && !storyUrl && !/[\p{L}\p{N}]/u.test(text)) return log.info('skip: no words', { conversationId });
 
   schedule(
     conversationId,

@@ -240,6 +240,18 @@ test('shared Instagram post: caption is looked up and kept', async () => {
   await wait(200);
   assert.match(store.load(98).history.at(-1).text, /shared a Facebook post of ours .*SN286/);
   assert.ok(calls.some((c) => c.url.includes('ig-caption?fbid=1399792989013636')));
+
+  // Messenger: reply to our Facebook story (patched Chatwoot passes story_url)
+  await post(server, {
+    event: 'message_created', id: 5004, message_type: 'incoming', private: false, content: 'Արժեքը',
+    content_attributes: { story_url: 'https://lookaside.fbsbx.com/story/123.jpg', story_id: '123' },
+    sender: { type: 'contact' }, conversation: { id: 97, status: 'open', channel: 'Channel::FacebookPage', inbox_id: 1 },
+    account: { id: 2 },
+  });
+  await wait(200);
+  const st97 = store.load(97);
+  assert.match(st97.history.at(-1).text, /replied to our Facebook story[\s\S]*Արժեքը/);
+  assert.deepEqual(st97.recentImages.urls, ['https://lookaside.fbsbx.com/story/123.jpg']);
 });
 
 test('questions from an earlier day are background only', async () => {

@@ -119,6 +119,8 @@ async function imageBlock(url) {
   try {
     const res = await fetch(url, { signal: AbortSignal.timeout(15000) });
     const type = (res.headers.get('content-type') || '').split(';')[0];
+    // A video (e.g. a video story) can't be shown to the model: skip it instead of breaking the turn.
+    if (res.ok && type && !type.startsWith('image/')) return null;
     if (!res.ok || !/^image\/(jpeg|png|gif|webp)$/.test(type)) throw new Error(`HTTP ${res.status} ${type}`);
     const buf = Buffer.from(await res.arrayBuffer());
     if (buf.length > 4.5 * 1024 * 1024) throw new Error('too large');
@@ -134,7 +136,7 @@ export async function respond({ conversationId, channel, customerName, images })
   // A follow-up like "price?" right after a photo/shared post still needs that picture.
   let urls = images || [];
   if (!urls.length && state.recentImages && Date.now() - state.recentImages.at < 2 * 3600 * 1000) urls = state.recentImages.urls;
-  const messages = toAnthropicMessages(state.history, await Promise.all(urls.slice(0, 3).map(imageBlock)));
+  const messages = toAnthropicMessages(state.history, (await Promise.all(urls.slice(0, 3).map(imageBlock))).filter(Boolean));
   if (!messages.length) return { skipped: 'no customer message' };
 
   const seenProducts = new Map(); // url -> product, for show_products
