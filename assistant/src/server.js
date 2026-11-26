@@ -25,8 +25,9 @@ async function instagramCaption(dataUrl) {
     else if (/^\d+$/.test(id || '')) query = `id=${id}`;
     else if (/(^|\.)instagram\.com$/.test(u.hostname)) query = `url=${encodeURIComponent(u.origin + u.pathname)}`;
     if (!query) return {};
+    // Older posts/reels are found by paging back through our posts, which can take ~10–20 s.
     const res = await fetch(`${config.igCaptionUrl}${config.igCaptionUrl.includes('?') ? '&' : '?'}${query}`, {
-      signal: AbortSignal.timeout(8000),
+      signal: AbortSignal.timeout(30000),
     });
     if (!res.ok) return {};
     const data = await res.json();
